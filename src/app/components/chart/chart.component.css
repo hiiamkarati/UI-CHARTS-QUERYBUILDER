@@ -1374,7 +1374,7 @@ ng-multiselect-dropdown {
   display: inline-flex; /* Ensure content aligns properly */
   align-items: center; /* Vertically center content */
   font-size: 0.875rem; /* Consistent font size */
-  line-height: 1.2; /* Improve text readability */
+  line-height: 1.2;; /* Improve text readability */
 }
 
 /* Styling for the close ('x') icon */
