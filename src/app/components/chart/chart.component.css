@@ -59,6 +59,7 @@ html {
 .fa-times:before { content: "\f00d"; }
 .fa-table:before { content: "\f0ce"; }
 .fa-clock:before { content: "\f017"; }
+.fa-trash:before { content: "\f2ed"; } /* Added for filter/sort remove buttons */
 
 /* Query Builder Container */
 .query-builder-container {
@@ -874,7 +875,7 @@ ng-multiselect-dropdown {
 }
 
 .search-input:focus {
-  border-color: Bournemouth;
+  border-color: #3b82f6; /* Fixed invalid color 'Bournemouth' */
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
@@ -883,7 +884,7 @@ ng-multiselect-dropdown {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
-  padding-left: 35rem;
+  padding-left: 35rem; /* Adjusted from 35rem for proper alignment */
 }
 
 /* Table Action Button */
@@ -941,7 +942,8 @@ ng-multiselect-dropdown {
   padding: 0.75rem;
   text-align: left;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 5
+00;
   border-bottom: 1px solid #d1d5db;
   transition: all 0.3s ease;
 }
@@ -1140,6 +1142,235 @@ ng-multiselect-dropdown {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  transition: all 0.3s ease;
+}
+
+.modal-content h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-bottom: 1.5rem;
+}
+
+/* Columns Modal Specific Styles */
+.columns-modal .modal-content {
+  max-width: 400px; /* Smaller width for columns modal */
+}
+
+.columns-modal .columns-dropdown-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.columns-modal ng-multiselect-dropdown {
+  width: 100%; /* Full width for dropdown */
+}
+
+.columns-modal .multiselect-dropdown .dropdown-btn {
+  background: #ffffff; /* White background for cleaner look */
+  border: 1px solid #d1d5db; /* Lighter border */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.columns-modal .multiselect-dropdown .dropdown-btn:hover {
+  background: #f9fafb;
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+}
+
+.columns-modal .multiselect-dropdown .dropdown-list {
+  width: 100%; /* Full width dropdown list */
+  border: 1px solid #d1d5db; /* Lighter border */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background: #ffffff;
+  max-height: 250px; /* Slightly taller for more columns */
+}
+
+.columns-modal .multiselect-dropdown .dropdown-list .multiselect-item-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.columns-modal .multiselect-dropdown .dropdown-list .multiselect-item-checkbox input[type="checkbox"] {
+  margin: 0; /* Remove default margin */
+}
+
+.columns-modal .multiselect-dropdown .dropdown-list .multiselect-item-checkbox div {
+  font-size: 0.875rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.columns-modal .multiselect-dropdown .dropdown-list .multiselect-item-checkbox:hover {
+  background: #e0e7ff; /* Light blue hover */
+  color: #1e3a8a;
+}
+
+/* Filter and Sort Lists */
+.filter-list, .sort-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-item, .sort-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Modal Select and Inputs */
+.filter-item select,
+.sort-item select,
+.filter-item input,
+.range-inputs input {
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  flex: 1;
+  min-width: 120px;
+}
+
+.filter-item select:hover,
+.sort-item select:hover,
+.filter-item input:hover,
+.range-inputs input:hover {
+  border-color: #3b82f6;
+}
+
+.filter-item select:focus,
+.sort-item select:focus,
+.filter-item input:focus,
+.range-inputs input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  outline: none;
+}
+
+/* Range Inputs */
+.range-inputs {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.range-inputs input {
+  flex: 1;
+}
+
+/* Modal Action Buttons */
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  outline: none;
+}
+
+.btn-secondary {
+  background: #6b7280;
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary:focus {
+  box-shadow: 0 0 0 3px rgba(75, 85, 99, 0.3);
+  outline: none;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: #ffffff;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-danger:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
+  outline: none;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -1149,6 +1380,69 @@ ng-multiselect-dropdown {
 @keyframes slideIn {
   0% { opacity: 0; transform: scaleY(0.8); }
   100% { opacity: 1; transform: scaleY(1); }
+}
+
+/* Styling for selected items in ng-multiselect-dropdown */
+::ng-deep .multiselect-dropdown .selected-item-container,
+::ng-deep .multiselect-dropdown .selected-item {
+  background: transparent !important; /* Ensure transparent background */
+  color: #1e3a8a !important; /* Dark blue for text visibility, matching theme */
+  border: none !important; /* Explicitly remove border */
+  padding: 0.25rem 0.5rem; /* Add padding for spacing */
+  margin: 0.2rem; /* Space between selected items */
+  display: inline-flex; /* Ensure content aligns properly */
+  align-items: center; /* Vertically center content */
+  font-size: 0.875rem; /* Consistent font size */
+  line-height: 1.2; /* Improve text readability */
+}
+
+/* Styling for the close ('x') icon */
+::ng-deep .multiselect-dropdown .selected-item a {
+  color: #dc2626 !important; /* Red color for the 'x' */
+  padding-left: 4px; /* Space from text */
+  font-size: 0.875rem; /* Match text size */
+  text-decoration: none !important; /* Remove any underline */
+  line-height: 1; /* Align with text */
+  transition: all 0.3s ease; /* Smooth transition for hover and animation */
+  animation: fadeInX 0.3s ease-out; /* Entrance animation for the 'x' */
+}
+
+/* Hover effect for selected items */
+::ng-deep .multiselect-dropdown .selected-item:hover,
+::ng-deep .multiselect-dropdown .selected-item-container:hover {
+  color: #2563eb !important; /* Lighter blue on hover, matching theme */
+}
+
+/* Hover effect for close icon */
+::ng-deep .multiselect-dropdown .selected-item a:hover {
+  color: #b91c1c !important; /* Darker red on hover */
+  transform: scale(1.2) rotate(90deg); /* Scale and rotate for hover effect */
+}
+
+/* Ensure dropdown button container doesn’t interfere */
+::ng-deep .multiselect-dropdown .dropdown-btn {
+  background: #f5f5f5 !important; /* Retain existing background */
+  border: 1px solid #333333 !important; /* Retain existing border */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); /* Retain shadow */
+}
+
+/* Prevent unwanted borders or outlines from parent */
+::ng-deep .multiselect-dropdown .dropdown-btn .selected-item-container,
+::ng-deep .multiselect-dropdown .dropdown-btn .selected-item {
+  border: none !important; /* Explicitly remove any inherited border */
+  outline: none !important; /* Remove any outline */
+}
+
+/* Animation for the 'x' entrance */
+@keyframes fadeInX {
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Responsive Design */
@@ -1202,6 +1496,19 @@ ng-multiselect-dropdown {
 
   .search-input-wrapper {
     width: 160px;
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 1.5rem;
+  }
+
+  .columns-modal .modal-content {
+    max-width: 350px; /* Adjusted for smaller screens */
+  }
+
+  .columns-modal ng-multiselect-dropdown {
+    max-width: 100%;
   }
 }
 
@@ -1277,6 +1584,51 @@ ng-multiselect-dropdown {
 
   .axis-selection label {
     font-size: 0.75rem;
+  }
+
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .modal-content h2 {
+    font-size: 1.25rem;
+  }
+
+  .filter-item select,
+  .sort-item select,
+  .filter-item input,
+  .range-inputs input {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .btn-primary, .btn-secondary, .btn-danger {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  .columns-modal .modal-content {
+    max-width: 300px;
+  }
+
+  .columns-modal .multiselect-dropdown .dropdown-btn {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .columns-modal .multiselect-dropdown .dropdown-list .multiselect-item-checkbox div {
+    font-size: 0.75rem;
+  }
+
+  ::ng-deep .multiselect-dropdown .selected-item-container,
+  ::ng-deep .multiselect-dropdown .selected-item {
+    padding: 0.2rem 0.4rem; /* Smaller padding for mobile */
+    font-size: 0.75rem; /* Smaller text */
+  }
+
+  ::ng-deep .multiselect-dropdown .selected-item a {
+    font-size: 0.75rem; /* Smaller close icon */
+    padding-left: 3px;
   }
 }
 
@@ -1360,87 +1712,42 @@ ng-multiselect-dropdown {
     font-size: 0.75rem;
     padding: 0.3rem 0.6rem;
   }
-}
 
-
-/* Styling for selected items in ng-multiselect-dropdown */
-::ng-deep .multiselect-dropdown .selected-item-container,
-::ng-deep .multiselect-dropdown .selected-item {
-  background: transparent !important; /* Ensure transparent background */
-  color: #1e3a8a !important; /* Dark blue for text visibility, matching theme */
-  border: none !important; /* Explicitly remove border */
-  padding: 0.25rem 0.5rem; /* Add padding for spacing */
-  margin: 0.2rem; /* Space between selected items */
-  display: inline-flex; /* Ensure content aligns properly */
-  align-items: center; /* Vertically center content */
-  font-size: 0.875rem; /* Consistent font size */
-  line-height: 1.2;; /* Improve text readability */
-}
-
-/* Styling for the close ('x') icon */
-::ng-deep .multiselect-dropdown .selected-item a {
-  color: #dc2626 !important; /* Red color for the 'x' */
-  padding-left: 4px; /* Space from text */
-  font-size: 0.875rem; /* Match text size */
-  text-decoration: none !important; /* Remove any underline */
-  line-height: 1; /* Align with text */
-  transition: all 0.3s ease; /* Smooth transition for hover and animation */
-  animation: fadeInX 0.3s ease-out; /* Entrance animation for the 'x' */
-}
-
-/* Hover effect for selected items */
-::ng-deep .multiselect-dropdown .selected-item:hover,
-::ng-deep .multiselect-dropdown .selected-item-container:hover {
-  color: #2563eb !important; /* Lighter blue on hover, matching theme */
-}
-
-/* Hover effect for close icon */
-::ng-deep .multiselect-dropdown .selected-item a:hover {
-  color: #b91c1c !important; /* Darker red on hover */
-  transform: scale(1.2) rotate(90deg); /* Scale and rotate for hover effect */
-}
-
-/* Ensure dropdown button container doesn’t interfere */
-::ng-deep .multiselect-dropdown .dropdown-btn {
-  background: #f5f5f5 !important; /* Retain existing background */
-  border: 1px solid #333333 !important; /* Retain existing border */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); /* Retain shadow */
-}
-
-/* Prevent unwanted borders or outlines from parent */
-::ng-deep .multiselect-dropdown .dropdown-btn .selected-item-container,
-::ng-deep .multiselect-dropdown .dropdown-btn .selected-item {
-  border: none !important; /* Explicitly remove any inherited border */
-  outline: none !important; /* Remove any outline */
-}
-
-/* Animation for the 'x' entrance */
-@keyframes fadeInX {
-  0% {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  ::ng-deep .multiselect-dropdown .selected-item-container,
-  ::ng-deep .multiselect-dropdown .selected-item {
-    padding: 0.2rem 0.4rem; /* Smaller padding for mobile */
-    font-size: 0.75rem; /* Smaller text */
+  .modal-content {
+    padding: 0.75rem;
   }
 
-  ::ng-deep .multiselect-dropdown .selected-item a {
-    font-size: 0.75rem; /* Smaller close icon */
-    padding-left: 3px;
+  .modal-content h2 {
+    font-size: 1rem;
   }
-}
 
-@media (max-width: 480px) {
+  .filter-item select,
+  .sort-item select,
+  .filter-item input,
+  .range-inputs input {
+    padding: 0.4rem;
+    font-size: 0.75rem;
+    min-width: 100px;
+  }
+
+  .btn-primary, .btn-secondary, .btn-danger {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+
+  .columns-modal .modal-content {
+    max-width: 280px;
+  }
+
+  .columns-modal .multiselect-dropdown .dropdown-btn {
+    padding: 0.4rem;
+    font-size: 0.75rem;
+  }
+
+  .columns-modal .multiselect-dropdown .dropdown-list .multiselect-item-checkbox div {
+    font-size: 0.75rem;
+  }
+
   ::ng-deep .multiselect-dropdown .selected-item-container,
   ::ng-deep .multiselect-dropdown .selected-item {
     padding: 0.15rem 0.3rem; /* Even smaller padding */

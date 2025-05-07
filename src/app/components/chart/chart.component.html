@@ -1,17 +1,18 @@
+
 <div class="query-builder-container">
   <div class="title-container">
-    <i class="fas fa-database query-builder-logo"></i>
+    <i class="fas fa-database query-builder-logo" aria-hidden="true"></i>
     <h1 class="query-builder-title">QueryBuilder</h1>
   </div>
   <div class="button-group">
-    <button (click)="onExport()" class="btn btn-export">
-      <i class="fas fa-file-export btn-icon"></i> Export
+    <button (click)="onExport()" class="btn btn-export" aria-label="Export query results">
+      <i class="fas fa-file-export btn-icon" aria-hidden="true"></i> Export
     </button>
-    <button (click)="onSave()" class="btn btn-save">
-      <i class="fas fa-floppy-disk btn-icon"></i> Save
+    <button (click)="onSave()" class="btn btn-save" aria-label="Save query">
+      <i class="fas fa-floppy-disk btn-icon" aria-hidden="true"></i> Save
     </button>
-    <button (click)="onRunQuery()" class="btn btn-run">
-      <i class="fas fa-play btn-icon"></i> Run Query
+    <button (click)="onRunQuery()" class="btn btn-run" aria-label="Run query">
+      <i class="fas fa-play btn-icon" aria-hidden="true"></i> Run Query
     </button>
   </div>
 </div>
@@ -20,7 +21,10 @@
   <div class="query-results-header">
     <span class="query-results-title">Customer Data Query Results</span>
     <span class="query-timestamp">{{ queryStatus.timestamp }}</span>
-    <span class="query-status" [class.success]="queryStatus.status === 'Successful'" [class.error]="queryStatus.status === 'Failed'">
+    <span class="query-status" [ngClass]="{
+      'success': queryStatus.status === 'Successful',
+      'error': queryStatus.status === 'Failed'
+    }">
       {{ queryStatus.status }}
     </span>
     <span class="query-info execution-time">Execution time: {{ queryStatus.executionTime }}s</span>
@@ -31,25 +35,29 @@
   <div class="visualization-section">
     <h3 class="visualization-title">Query Visualization</h3>
     <div class="chart-selection">
-      <button (click)="selectChart('bar')" 
-              [class.chart-selected]="selectedChart === 'bar'" 
-              class="chart-btn">
-        <i class="fas fa-chart-bar chart-btn-icon"></i> Bar Chart
+      <button (click)="selectChart('bar')"
+              [ngClass]="{'chart-selected': selectedChart === 'bar'}"
+              class="chart-btn"
+              aria-label="Select bar chart">
+        <i class="fas fa-chart-bar chart-btn-icon" aria-hidden="true"></i> Bar Chart
       </button>
-      <button (click)="selectChart('line')" 
-              [class.chart-selected]="selectedChart === 'line'" 
-              class="chart-btn">
-        <i class="fas fa-chart-line chart-btn-icon"></i> Line Chart
+      <button (click)="selectChart('line')"
+              [ngClass]="{'chart-selected': selectedChart === 'line'}"
+              class="chart-btn"
+              aria-label="Select line chart">
+        <i class="fas fa-chart-line chart-btn-icon" aria-hidden="true"></i> Line Chart
       </button>
-      <button (click)="selectChart('pie')" 
-              [class.chart-selected]="selectedChart === 'pie'" 
-              class="chart-btn">
-        <i class="fas fa-chart-pie chart-btn-icon"></i> Pie Chart
+      <button (click)="selectChart('pie')"
+              [ngClass]="{'chart-selected': selectedChart === 'pie'}"
+              class="chart-btn"
+              aria-label="Select pie chart">
+        <i class="fas fa-chart-pie chart-btn-icon" aria-hidden="true"></i> Pie Chart
       </button>
-      <button (click)="selectChart(null)" 
-              [class.chart-selected]="!selectedChart" 
-              class="chart-btn">
-        <i class="fas fa-ban chart-btn-icon"></i> No Visualization Selected
+      <button (click)="selectChart(null)"
+              [ngClass]="{'chart-selected': !selectedChart}"
+              class="chart-btn"
+              aria-label="Deselect visualization">
+        <i class="fas fa-ban chart-btn-icon" aria-hidden="true"></i> No Visualization
       </button>
     </div>
     <div *ngIf="!selectedChart" class="no-visualization-box">
@@ -58,12 +66,13 @@
         <p>Select a chart type from the options above</p>
         <p>to visualize your query results</p>
       </div>
-      <button (click)="autoVisualize()" class="btn btn-auto">Auto Visualize</button>
+      <button (click)="autoVisualize()" class="btn btn-auto" aria-label="Auto visualize data">Auto Visualize</button>
     </div>
     <p *ngIf="selectedChart" class="visualization-message">Select chart type and axes to visualize your query results</p>
     <div class="axis-selection" *ngIf="selectedChart">
-      <label>X-Axis:</label>
+      <label for="x-axis-select">X-Axis:</label>
       <ng-multiselect-dropdown
+        id="x-axis-select"
         [placeholder]="'Select X-Axis Columns'"
         [settings]="dropdownSettings"
         [data]="columns"
@@ -71,10 +80,12 @@
         (onSelect)="onAxisChange()"
         (onDeSelect)="onAxisChange()"
         (onSelectAll)="onAxisChange()"
-        (onDeSelectAll)="onAxisChange()">
+        (onDeSelectAll)="onAxisChange()"
+        aria-label="Select X-Axis columns">
       </ng-multiselect-dropdown>
-      <label>Y-Axis:</label>
+      <label for="y-axis-select">Y-Axis:</label>
       <ng-multiselect-dropdown
+        id="y-axis-select"
         [placeholder]="'Select Y-Axis Columns'"
         [settings]="dropdownSettings"
         [data]="columns"
@@ -82,15 +93,17 @@
         (onSelect)="onAxisChange()"
         (onDeSelect)="onAxisChange()"
         (onSelectAll)="onAxisChange()"
-        (onDeSelectAll)="onAxisChange()">
+        (onDeSelectAll)="onAxisChange()"
+        aria-label="Select Y-Axis columns">
       </ng-multiselect-dropdown>
     </div>
-    <button *ngIf="selectedChart" (click)="autoVisualize()" class="btn btn-auto">Auto Visualize</button>
-    <div class="chart-container" *ngIf="selectedChart">
-      <canvas baseChart 
-              [data]="chartData" 
-              [options]="chartOptions" 
-              [type]="selectedChart"></canvas>
+    <button *ngIf="selectedChart" (click)="autoVisualize()" class="btn btn-auto" aria-label="Auto visualize data">Auto Visualize</button>
+    <div class="chart-container" *ngIf="selectedChart" @chartFade>
+      <canvas baseChart
+              [data]="chartData"
+              [options]="chartOptions"
+              [type]="selectedChart"
+              aria-label="Query results chart"></canvas>
     </div>
   </div>
 
@@ -99,57 +112,78 @@
     <div class="table-title-and-export">
       <h3 class="results-table-title">Results Table</h3>
       <div class="export-buttons">
-        <button class="export-btn" (click)="exportCsv()">
-          <i class="fas fa-file-csv btn-icon"></i> Export CSV
+        <button class="export-btn" (click)="exportCsv()" aria-label="Export as CSV">
+          <i class="fas fa-file-csv btn-icon" aria-hidden="true"></i> Export CSV
         </button>
-        <button class="export-btn" (click)="exportExcel()">
-          <i class="fas fa-file-excel btn-icon"></i> Export Excel
+        <button class="export-btn" (click)="exportExcel()" aria-label="Export as Excel">
+          <i class="fas fa-file-excel btn-icon" aria-hidden="true"></i> Export Excel
         </button>
-        <button class="export-btn" (click)="exportPdf()">
-          <i class="fas fa-file-pdf btn-icon"></i> Export PDF
+        <button class="export-btn" (click)="exportPdf()" aria-label="Export as PDF">
+          <i class="fas fa-file-pdf btn-icon" aria-hidden="true"></i> Export PDF
         </button>
       </div>
     </div>
     <div class="table-controls">
       <div class="search-and-actions">
         <div class="search-input-wrapper">
-          <i class="fas fa-search search-icon"></i>
-          <input type="text" class="search-input" placeholder="Search results..." [(ngModel)]="searchQuery" (input)="onSearch()" />
+          <i class="fas fa-search search-icon" aria-hidden="true"></i>
+          <input type="text"
+                 class="search-input"
+                 placeholder="Search results..."
+                 [(ngModel)]="searchQuery"
+                 (input)="onSearch()"
+                 aria-label="Search table results" />
         </div>
         <span class="row-count">{{ totalRows }} rows</span>
         <div class="table-actions">
-          <button class="table-action-btn" (click)="openFilter()">
-            <i class="fas fa-filter btn-icon"></i> Filter
+          <button class="table-action-btn" (click)="openFilter()" aria-label="Open filter modal">
+            <i class="fas fa-filter btn-icon" aria-hidden="true"></i> Filter
           </button>
-          <button class="table-action-btn" (click)="openSort()">
-            <i class="fas fa-sort btn-icon"></i> Sort
+          <button class="table-action-btn" (click)="openSort()" aria-label="Open sort modal">
+            <i class="fas fa-sort btn-icon" aria-hidden="true"></i> Sort
           </button>
-          <button class="table-action-btn" (click)="openColumns()">
-            <i class="fas fa-columns btn-icon"></i> Columns
+          <button class="table-action-btn" (click)="openColumns()" aria-label="Open columns modal">
+            <i class="fas fa-columns btn-icon" aria-hidden="true"></i> Columns
           </button>
         </div>
       </div>
     </div>
-    <table class="results-table">
+    <table class="results-table" role="grid">
       <thead>
         <tr>
-          <th *ngFor="let column of availableColumns" (click)="sortTable(column)" [class.asc]="sortColumn === column && sortDirection === 'asc'" [class.desc]="sortColumn === column && sortDirection === 'desc'">
+          <th *ngFor="let column of selectedColumns"
+              (click)="sortTable(column)"
+              [ngClass]="{
+                'asc': sortColumn === column && sortDirection === 'asc',
+                'desc': sortColumn === column && sortDirection === 'desc'
+              }"
+              scope="col"
+              role="columnheader"
+              [attr.aria-sort]="sortColumn === column ? sortDirection : 'none'">
             {{ column }}
           </th>
-          <th>Actions</th>
+          <th scope="col" class="actions-header">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let row of paginatedData; let i = index" @rowFadeIn (click)="onRowClick(row)">
-          <td *ngFor="let column of availableColumns">{{ row[column] }}</td>
-          <td>
+        <tr *ngFor="let row of paginatedData; let i = index"
+            @rowFadeIn
+            (click)="onRowClick(row)"
+            role="row">
+          <td *ngFor="let column of selectedColumns" role="cell">{{ row[column] }}</td>
+          <td role="cell">
             <div class="three-dot-menu">
-              <button class="three-dot-btn" (click)="toggleMenu(i)">
+              <button class="three-dot-btn"
+                      (click)="toggleMenu(i)"
+                      aria-label="Row actions menu"
+                      [attr.aria-expanded]="showMenuIndex === i">
                 <span class="btn-icon">⋮</span>
               </button>
-              <div class="three-dot-menu-content" [ngClass]="{'show': showMenuIndex === i}">
-                <button (click)="viewRow(row)">View</button>
-                <button (click)="editRow(row)">Edit</button>
+              <div class="three-dot-menu-content"
+                   [ngClass]="{'show': showMenuIndex === i}"
+                   role="menu">
+                <button (click)="viewRow(row)" role="menuitem">View</button>
+                <button (click)="editRow(row)" role="menuitem">Edit</button>
               </div>
             </div>
           </td>
@@ -157,14 +191,109 @@
       </tbody>
     </table>
     <div class="pagination">
-      <select [(ngModel)]="rowsPerPage" (change)="onRowsPerPageChange()">
+      <select [(ngModel)]="rowsPerPage"
+              (change)="onRowsPerPageChange()"
+              aria-label="Rows per page">
         <option [value]="5">5 rows per page</option>
         <option [value]="10">10 rows per page</option>
         <option [value]="25">25 rows per page</option>
       </select>
-      <p class="pagination-info">Showing {{ (currentPage - 1) * rowsPerPage + 1 }}-{{ currentPage * rowsPerPage > totalRows ? totalRows : currentPage * rowsPerPage }} of {{ totalRows }} results</p>
-      <button class="pagination-btn" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
-      <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+      <p class="pagination-info">
+        Showing {{ (currentPage - 1) * rowsPerPage + 1 }}-{{ currentPage * rowsPerPage > totalRows ? totalRows : currentPage * rowsPerPage }} of {{ totalRows }} results
+      </p>
+      <button class="pagination-btn"
+              (click)="previousPage()"
+              [disabled]="currentPage === 1"
+              aria-label="Previous page">Previous</button>
+      <button class="pagination-btn"
+              (click)="nextPage()"
+              [disabled]="currentPage === totalPages"
+              aria-label="Next page">Next</button>
+    </div>
+  </div>
+
+  <!-- Columns Modal -->
+  <div class="modal" *ngIf="showColumnsModal" @modalFade role="dialog" aria-labelledby="columns-modal-title">
+    <div class="modal-content">
+      <h2 id="columns-modal-title">Select Columns</h2>
+      <ng-multiselect-dropdown
+        [placeholder]="'Select Columns'"
+        [settings]="dropdownSettings"
+        [data]="columns"
+        [(ngModel)]="columns"
+        aria-label="Select table columns">
+      </ng-multiselect-dropdown>
+      <div class="modal-actions">
+        <button (click)="applyColumns()" class="btn btn-primary" aria-label="Apply column selection">Apply</button>
+        <button (click)="closeColumnsModal()" class="btn btn-secondary" aria-label="Close columns modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Modal -->
+  <div class="modal" *ngIf="showFilterModal" @modalFade role="dialog" aria-labelledby="filter-modal-title">
+    <div class="modal-content">
+      <h2 id="filter-modal-title">Add Filters</h2>
+      <div class="filter-list">
+        <div *ngFor="let filter of filters; let i = index" class="filter-item">
+          <select [(ngModel)]="filter.column" (change)="onFilterColumnChange(filter)" aria-label="Select filter column">
+            <option *ngFor="let col of availableColumns" [value]="col">{{ col }}</option>
+          </select>
+          <select [(ngModel)]="filter.operation" aria-label="Select filter operation">
+            <option *ngFor="let op of filter.availableOperations" [value]="op">{{ op }}</option>
+          </select>
+          <ng-multiselect-dropdown
+            *ngIf="filter.operation !== 'range'"
+            [placeholder]="'Select Values'"
+            [settings]="dropdownSettings"
+            [data]="getFilterValues(filter)"
+            [(ngModel)]="filter.values"
+            aria-label="Select filter values">
+          </ng-multiselect-dropdown>
+          <div *ngIf="filter.operation === 'range'" class="range-inputs">
+            <input type="number" [(ngModel)]="filter.valueStart" placeholder="Min" aria-label="Minimum value" />
+            <input type="number" [(ngModel)]="filter.valueEnd" placeholder="Max" aria-label="Maximum value" />
+          </div>
+          <select [(ngModel)]="filter.condition" aria-label="Select filter condition">
+            <option value="and">AND</option>
+            <option value="or">OR</option>
+          </select>
+          <button (click)="removeFilter(i)" class="btn btn-danger" aria-label="Remove filter">
+            <i class="fas fa-trash" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <button (click)="addFilter()" class="btn btn-secondary" aria-label="Add new filter">Add Filter</button>
+      <div class="modal-actions">
+        <button (click)="applyFilters()" class="btn btn-primary" aria-label="Apply filters">Apply</button>
+        <button (click)="closeFilterModal()" class="btn btn-secondary" aria-label="Close filter modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sort Modal -->
+  <div class="modal" *ngIf="showSortModal" @modalFade role="dialog" aria-labelledby="sort-modal-title">
+    <div class="modal-content">
+      <h2 id="sort-modal-title">Sort Columns</h2>
+      <div class="sort-list">
+        <div *ngFor="let sort of sortColumns; let i = index" class="sort-item">
+          <select [(ngModel)]="sort.column" aria-label="Select sort column">
+            <option *ngFor="let col of availableColumns" [value]="col">{{ col }}</option>
+          </select>
+          <select [(ngModel)]="sort.order" aria-label="Select sort order">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+          <button (click)="removeSort(i)" class="btn btn-danger" aria-label="Remove sort">
+            <i class="fas fa-trash" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <button (click)="addSort()" class="btn btn-secondary" aria-label="Add new sort">Add Sort</button>
+      <div class="modal-actions">
+        <button (click)="applySort()" class="btn btn-primary" aria-label="Apply sort">Apply</button>
+        <button (click)="closeSortModal()" class="btn btn-secondary" aria-label="Close sort modal">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -172,7 +301,7 @@
   <div class="query-details-section">
     <h3 class="query-details-title">Query Details</h3>
     <div class="query-details-panel">
-      <div class="query-details-panel-header" (click)="togglePanel('sql')">
+      <div class="query-details-panel-header" (click)="togglePanel('sql')" role="button" tabindex="0" [attr.aria-expanded]="panels.sql">
         View SQL
       </div>
       <div class="query-details-panel-content" *ngIf="panels.sql">
@@ -180,27 +309,27 @@
       </div>
     </div>
     <div class="query-details-panel">
-      <div class="query-details-panel-header" (click)="togglePanel('dataSource')">
+      <div class="query-details-panel-header" (click)="togglePanel('dataSource')" role="button" tabindex="0" [attr.aria-expanded]="panels.dataSource">
         Data Source
       </div>
       <div class="query-details-panel-content" *ngIf="panels.dataSource">
-        <p><strong>Source:</strong> Customer Data</p>
+        <p><strong>Source:</strong> {{ tableName || 'Customer Data' }}</p>
         <p><strong>Type:</strong> PostgreSQL Database</p>
-        <p><strong>Last Updated:</strong> April 16, 2025</p>
+        <p><strong>Last Updated:</strong> {{ queryStatus.timestamp || 'April 16, 2025' }}</p>
       </div>
     </div>
     <div class="query-details-panel">
-      <div class="query-details-panel-header" (click)="togglePanel('parameters')">
+      <div class="query-details-panel-header" (click)="togglePanel('parameters')" role="button" tabindex="0" [attr.aria-expanded]="panels.parameters">
         Query Parameters
       </div>
       <div class="query-details-panel-content" *ngIf="panels.parameters">
-        <p><strong>Sort By:</strong> registration_date (Descending)</p>
-        <p><strong>Limit:</strong> 5 rows</p>
-        <p><strong>Filters:</strong> None</p>
+        <p><strong>Sort By:</strong> {{ sortByDisplay }}</p>
+        <p><strong>Limit:</strong> {{ queryData.length || 'No limit' }} rows</p>
+        <p><strong>Filters:</strong> {{ filtersDisplay }}</p>
       </div>
     </div>
     <div class="query-details-panel">
-      <div class="query-details-panel-header" (click)="togglePanel('columns')">
+      <div class="query-details-panel-header" (click)="togglePanel('columns')" role="button" tabindex="0" [attr.aria-expanded]="panels.columns">
         Selected Columns
       </div>
       <div class="query-details-panel-content" *ngIf="panels.columns">
@@ -210,18 +339,24 @@
       </div>
     </div>
     <div class="query-details-panel">
-      <div class="query-details-panel-header" (click)="togglePanel('filters')">
+      <div class="query-details-panel-header" (click)="togglePanel('filters')" role="button" tabindex="0" [attr.aria-expanded]="panels.filters">
         Applied Filters
       </div>
       <div class="query-details-panel-content" *ngIf="panels.filters">
-        <p>No filters have been applied to this query</p>
+        <p *ngIf="!filters.length">No filters have been applied to this query</p>
+        <ul *ngIf="filters.length">
+          <li *ngFor="let filter of filters">
+            {{ filter.column }} {{ filter.operation }} {{ filter.values.join(', ') }}
+            <span *ngIf="filter.operation === 'range'">{{ filter.valueStart }} - {{ filter.valueEnd }}</span>
+          </li>
+        </ul>
       </div>
     </div>
     <div class="query-action-buttons">
-      <button class="query-action-btn" (click)="editQuery()">Edit Query</button>
-      <button class="query-action-btn" (click)="duplicateQuery()">Duplicate Query</button>
-      <button class="query-action-btn" (click)="shareResults()">Share Results</button>
-      <button class="query-action-btn" (click)="scheduleQuery()">Schedule</button>
+      <button class="query-action-btn" (click)="editQuery()" aria-label="Edit query">Edit Query</button>
+      <button class="query-action-btn" (click)="duplicateQuery()" aria-label="Duplicate query">Duplicate Query</button>
+      <button class="query-action-btn" (click)="shareResults()" aria-label="Share results">Share Results</button>
+      <button class="query-action-btn" (click)="scheduleQuery()" aria-label="Schedule query">Schedule</button>
     </div>
   </div>
 </div>

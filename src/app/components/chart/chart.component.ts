@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { NgChartsModule } from 'ng2-charts';
 import { NgMultiSelectDropDownModule, IDropdownSettings } from 'ng-multiselect-dropdown';
 import { ChartConfiguration, ChartType } from 'chart.js';
-import { ApiService, ApiQuery, ApiChart } from '../../Services/api.service';
+import { ApiService, ApiQuery, ApiChart, Filter, SortColumn, FilterColumn } from '../../Services/api.service';
 import { QueryService } from '../../Services/query.service';
 import { QueryRequestBody } from '../dashboard/dashboard.component';
 import { trigger, style, animate, transition } from '@angular/animations';
@@ -50,6 +50,15 @@ interface DropdownItem {
         animate('500ms ease-in', style({ opacity: 1 })),
       ]),
     ]),
+    trigger('modalFade', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.8)' }),
+        animate('300ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0, transform: 'scale(0.8)' })),
+      ]),
+    ]),
   ],
 })
 export class ChartComponent implements OnInit {
@@ -66,6 +75,30 @@ export class ChartComponent implements OnInit {
         labels: {
           font: { size: 14, family: 'Inter, Arial, sans-serif' },
           padding: 15,
+          usePointStyle: true,
+        },
+        onClick: (e, legendItem, legend) => {
+          const index = legendItem.datasetIndex;
+          const ci = legend.chart;
+          if (index !== undefined) {
+            ci.toggleDataVisibility(index);
+            ci.update();
+          }
+        },
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleFont: { size: 14 },
+        bodyFont: { size: 12 },
+        padding: 10,
+        cornerRadius: 4,
+        callbacks: {
+          label: (context) => {
+            const label = context.dataset.label || '';
+            const value = context.parsed.y || context.parsed;
+            return `${label}: ${value}`;
+          },
         },
       },
     },
@@ -76,12 +109,12 @@ export class ChartComponent implements OnInit {
     scales: {
       y: {
         beginAtZero: true,
-        display: this.selectedChart !== 'pie',
+        display: true,
         grid: { color: 'rgba(209, 213, 219, 0.3)' },
         ticks: { color: '#1f2937', font: { size: 12 } },
       },
       x: {
-        display: this.selectedChart !== 'pie',
+        display: true,
         grid: { display: false },
         ticks: {
           color: '#1f2937',
@@ -92,6 +125,20 @@ export class ChartComponent implements OnInit {
         },
       },
     },
+    onClick: (event, elements, chart) => {
+      if (elements.length > 0) {
+        const element = elements[0];
+        const datasetIndex = element.datasetIndex;
+        const index = element.index;
+        const label = chart.data.labels?.[index];
+        const datasetLabel = chart.data.datasets[datasetIndex].label;
+        this.handleChartClick(label, datasetLabel, index);
+      }
+    },
+    onHover: (event, elements, chart) => {
+      const el = chart.canvas;
+      el.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+    },
   };
 
   xAxis: DropdownItem[] = [];
@@ -99,8 +146,18 @@ export class ChartComponent implements OnInit {
   xAxisColumns: string[] = [];
   yAxisColumns: string[] = [];
   availableColumns: string[] = [];
-  columns: DropdownItem[] = [];
   selectedColumns: string[] = [];
+  columns: DropdownItem[] = [];
+  filterColumns: FilterColumn[] = [];
+
+  showColumnsModal = false;
+  showFilterModal = false;
+  showSortModal = false;
+  filters: Filter[] = [];
+  sortColumns: SortColumn[] = [];
+
+  sortByDisplay: string = 'None';
+  filtersDisplay: string = 'None';
 
   dropdownSettings: IDropdownSettings = {
     singleSelection: false,
@@ -129,6 +186,7 @@ export class ChartComponent implements OnInit {
   searchQuery = '';
   sortColumn = '';
   sortDirection: 'asc' | 'desc' = 'asc';
+  tableName: string = '';
 
   sqlQuery = '';
   panels: Panels = { sql: false, dataSource: false, parameters: false, columns: false, filters: false };
@@ -142,6 +200,7 @@ export class ChartComponent implements OnInit {
     this.queryService.getQueryBody().subscribe((body: QueryRequestBody | null) => {
       if (body) {
         this.queryRequestBody = body;
+        this.tableName = body.tableName;
         this.generateAndExecuteQuery();
       } else {
         this.queryStatus.status = 'Failed';
@@ -192,13 +251,14 @@ export class ChartComponent implements OnInit {
             this.availableColumns = data.length ? Object.keys(data[0]) : [];
             this.columns = this.availableColumns
               .sort((a, b) => a.localeCompare(b))
-              .map((col, index) => ({ item_id: index, item_text: col, isSelected: false }));
+              .map((col, index) => ({ item_id: index, item_text: col, isSelected: true }));
             this.selectedColumns = this.availableColumns;
             this.xAxis = this.columns.slice(0, 1).map(item => ({ ...item, isSelected: true }));
             this.yAxis = this.columns.slice(1, 2).map(item => ({ ...item, isSelected: true }));
             this.xAxisColumns = this.xAxis.map(item => item.item_text);
             this.yAxisColumns = this.yAxis.map(item => item.item_text);
-            this.sortColumns();
+            this.initializeFilterColumns();
+            this.applyFiltersAndSort();
             this.updatePagination();
             this.updateChartData();
             this.isLoading = false;
@@ -207,6 +267,36 @@ export class ChartComponent implements OnInit {
         });
       },
       error: (err) => this.handleQueryFailure(err, startTime),
+    });
+  }
+
+  private initializeFilterColumns() {
+    this.apiService.GetDataTypeData(this.tableName).subscribe({
+      next: (dataTypes) => {
+        this.filterColumns = this.availableColumns.map(col => ({
+          name: col,
+          type: dataTypes[col] || 'string',
+          values: [],
+        }));
+        this.fetchDistinctValues();
+      },
+      error: (err) => console.error('Failed to fetch data types:', err),
+    });
+  }
+
+  private fetchDistinctValues() {
+    this.filterColumns.forEach(col => {
+      this.apiService.GetDistinctColValues(this.tableName, col.name).subscribe({
+        next: (values) => {
+          col.values = values.map((v: any) => v[col.name]);
+          this.filters = this.filters.map(filter => ({
+            ...filter,
+            availableValues: filter.column === col.name ? col.values : filter.availableValues,
+          }));
+          this.updateDisplayStrings();
+        },
+        error: (err) => console.error(`Failed to fetch distinct values for ${col.name}:`, err),
+      });
     });
   }
 
@@ -262,6 +352,7 @@ export class ChartComponent implements OnInit {
           backgroundColor: ['#60a5fa', '#93c5fd', '#2563eb', '#1d4ed8', '#bfdbfe'],
           borderColor: '#2563eb',
           borderWidth: 1,
+          hoverOffset: 20,
         }],
       };
     } else {
@@ -280,6 +371,10 @@ export class ChartComponent implements OnInit {
           borderColor: color,
           borderWidth: this.selectedChart === 'line' ? 2 : 1,
           fill: this.selectedChart === 'line' ? false : true,
+          pointRadius: this.selectedChart === 'line' ? 4 : 0,
+          pointHoverRadius: this.selectedChart === 'line' ? 6 : 0,
+          hoverBackgroundColor: color,
+          hoverBorderWidth: 2,
         };
       });
 
@@ -288,6 +383,48 @@ export class ChartComponent implements OnInit {
         datasets,
       };
     }
+
+    // Update chart options based on chart type
+    this.chartOptions = {
+      ...this.chartOptions,
+      scales: {
+        y: {
+          beginAtZero: true,
+          display: this.selectedChart !== 'pie',
+          grid: { color: 'rgba(209, 213, 219, 0.3)' },
+          ticks: { color: '#1f2937', font: { size: 12 } },
+        },
+        x: {
+          display: this.selectedChart !== 'pie',
+          grid: { display: false },
+          ticks: {
+            color: '#1f2937',
+            font: { size: 12 },
+            autoSkip: false,
+            maxRotation: 45,
+            minRotation: 0,
+          },
+        },
+      },
+    };
+  }
+
+  handleChartClick(label: any, datasetLabel: any, index: number) {
+    const filter = this.filters.find(f => f.column === this.xAxisColumns[0]);
+    if (filter) {
+      filter.values = [label];
+    } else {
+      this.filters.push({
+        column: this.xAxisColumns[0],
+        operation: 'equals',
+        values: [label],
+        availableOperations: ['equals'],
+        availableValues: [label],
+        condition: 'and',
+      });
+    }
+    this.applyFiltersAndSort();
+    alert(`Filtered by ${this.xAxisColumns[0]} = ${label}`);
   }
 
   selectChart(chartType: ChartType | null) {
@@ -351,8 +488,8 @@ export class ChartComponent implements OnInit {
       xAxisColumns: this.xAxisColumns,
       yAxisColumns: this.yAxisColumns,
       aggregateFunction: this.queryRequestBody.aggregations?.[0]?.function || '',
-      filters: this.queryRequestBody.filters || [],
-      sortColumns: [],
+      filters: this.filters,
+      sortColumns: this.sortColumns,
       dataLimit: this.queryData.length,
       saved: true,
     };
@@ -379,7 +516,7 @@ export class ChartComponent implements OnInit {
     this.generateAndExecuteQuery();
   }
 
-  sortColumns() {
+  reorderColumns() {
     const sortedColumns = [...this.columns];
     sortedColumns.forEach(item => {
       item.isSelected = this.xAxis.some(x => x.item_id === item.item_id) || 
@@ -394,7 +531,7 @@ export class ChartComponent implements OnInit {
   onAxisChange() {
     this.xAxisColumns = this.xAxis.map(item => item.item_text);
     this.yAxisColumns = this.yAxis.map(item => item.item_text);
-    this.sortColumns();
+    this.reorderColumns();
     this.updateChartData();
   }
 
@@ -402,35 +539,189 @@ export class ChartComponent implements OnInit {
     this.onAxisChange();
   }
 
-  sortTable(column: string) {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
+  openColumns() {
+    this.showColumnsModal = true;
+  }
+
+  closeColumnsModal() {
+    this.showColumnsModal = false;
+  }
+
+  applyColumns() {
+    this.selectedColumns = this.columns.filter(col => col.isSelected).map(col => col.item_text);
+    this.applyFiltersAndSort();
+    this.closeColumnsModal();
+  }
+
+  openFilter() {
+    this.showFilterModal = true;
+  }
+
+  closeFilterModal() {
+    this.showFilterModal = false;
+  }
+
+  addFilter() {
+    const column = this.availableColumns[0] || '';
+    const colType = this.filterColumns.find(c => c.name === column)?.type || 'string';
+    const operations = colType.includes('int') || colType.includes('float') 
+      ? ['equals', 'not equals', 'greater than', 'less than', 'range']
+      : ['equals', 'not equals', 'contains', 'like'];
+    this.filters.push({
+      column,
+      operation: operations[0],
+      values: [],
+      availableOperations: operations,
+      availableValues: this.filterColumns.find(c => c.name === column)?.values || [],
+      condition: 'and',
+    });
+    this.updateDisplayStrings();
+  }
+
+  removeFilter(index: number) {
+    this.filters.splice(index, 1);
+    this.applyFiltersAndSort();
+  }
+
+  onFilterColumnChange(filter: Filter) {
+    const col = this.filterColumns.find(c => c.name === filter.column);
+    filter.availableValues = col?.values || [];
+    filter.values = [];
+    filter.operation = col?.type.includes('int') || col?.type.includes('float') 
+      ? 'equals' 
+      : 'contains';
+    filter.availableOperations = col?.type.includes('int') || col?.type.includes('float')
+      ? ['equals', 'not equals', 'greater than', 'less than', 'range']
+      : ['equals', 'not equals', 'contains', 'like'];
+    this.updateDisplayStrings();
+  }
+
+  applyFilters() {
+    this.applyFiltersAndSort();
+    this.closeFilterModal();
+  }
+
+  openSort() {
+    this.showSortModal = true;
+  }
+
+  closeSortModal() {
+    this.showSortModal = false;
+  }
+
+  addSort() {
+    this.sortColumns.push({
+      column: this.availableColumns[0] || '',
+      order: 'asc',
+    });
+    this.updateDisplayStrings();
+  }
+
+  removeSort(index: number) {
+    this.sortColumns.splice(index, 1);
+    this.applyFiltersAndSort();
+  }
+
+  applySort() {
+    this.applyFiltersAndSort();
+    this.closeSortModal();
+  }
+
+  private updateDisplayStrings() {
+    this.sortByDisplay = this.sortColumns.length
+      ? this.sortColumns.map(s => `${s.column} (${s.order})`).join(', ')
+      : 'None';
+    this.filtersDisplay = this.filters.length
+      ? this.filters.map(f => `${f.column} ${f.operation}`).join(', ')
+      : 'None';
+  }
+
+  getFilterValues(filter: Filter): DropdownItem[] {
+    return filter.availableValues.map((v, idx) => ({
+      item_id: idx,
+      item_text: String(v),
+      isSelected: false,
+    }));
+  }
+
+  applyFiltersAndSort() {
+    let data = [...this.queryData];
+
+    if (this.searchQuery) {
+      data = data.filter((row) =>
+        Object.values(row).some((val) =>
+          val?.toString().toLowerCase().includes(this.searchQuery.toLowerCase())
+        )
+      );
     }
 
-    this.filteredData.sort((a, b) => {
-      const valueA = a[column] != null ? a[column].toString().toLowerCase() : '';
-      const valueB = b[column] != null ? b[column].toString().toLowerCase() : '';
-      if (valueA === '' && valueB !== '') return 1;
-      if (valueB === '' && valueA !== '') return -1;
-      if (valueA === '' && valueB === '') return 0;
-      return this.sortDirection === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+    this.filters.forEach(filter => {
+      data = data.filter(row => {
+        const value = row[filter.column];
+        if (value == null) return false;
+
+        const filterValues = filter.values.map(v => v.toString().toLowerCase());
+        const strValue = value.toString().toLowerCase();
+        const numValue = Number(value);
+
+        switch (filter.operation) {
+          case 'equals':
+            return filterValues.includes(strValue);
+          case 'not equals':
+            return !filterValues.includes(strValue);
+          case 'contains':
+            return filterValues.some(v => strValue.includes(v));
+          case 'like':
+            return filterValues.some(v => strValue.match(new RegExp(v.replace('%', '.*'), 'i')));
+          case 'greater than':
+            return !isNaN(numValue) && numValue > Number(filter.values[0]);
+          case 'less than':
+            return !isNaN(numValue) && numValue < Number(filter.values[0]);
+          case 'range':
+            return !isNaN(numValue) && numValue >= Number(filter.valueStart) && numValue <= Number(filter.valueEnd);
+          default:
+            return true;
+        }
+      });
     });
 
+    if (this.sortColumns.length > 0) {
+      data.sort((a, b) => {
+        for (const sort of this.sortColumns) {
+          const valueA = a[sort.column] != null ? a[sort.column].toString().toLowerCase() : '';
+          const valueB = b[sort.column] != null ? b[sort.column].toString().toLowerCase() : '';
+          if (valueA === '' && valueB !== '') return 1;
+          if (valueB === '' && valueA !== '') return -1;
+          if (valueA === '' && valueB === '') continue;
+          const comparison = valueA.localeCompare(valueB);
+          if (comparison !== 0) {
+            return sort.order === 'asc' ? comparison : -comparison;
+          }
+        }
+        return 0;
+      });
+    }
+
+    this.filteredData = data;
+    this.totalRows = data.length;
+    this.currentPage = 1;
     this.updatePagination();
+    this.updateDisplayStrings();
+    this.updateChartData();
+  }
+
+  sortTable(column: string) {
+    this.sortColumns = [{
+      column,
+      order: this.sortColumn === column && this.sortDirection === 'asc' ? 'desc' : 'asc'
+    }];
+    this.sortColumn = column;
+    this.sortDirection = this.sortColumns[0].order;
+    this.applyFiltersAndSort();
   }
 
   onSearch() {
-    this.filteredData = this.queryData.filter((row) =>
-      Object.values(row).some((val) =>
-        val?.toString().toLowerCase().includes(this.searchQuery.toLowerCase())
-      )
-    );
-    this.totalRows = this.filteredData.length;
-    this.currentPage = 1;
-    this.updatePagination();
+    this.applyFiltersAndSort();
   }
 
   updatePagination() {
@@ -513,8 +804,8 @@ export class ChartComponent implements OnInit {
       const doc = new jsPDF();
       doc.text('Query Results', 14, 20);
       autoTable(doc, {
-        head: [this.availableColumns],
-        body: this.queryData.map((row) => Object.values(row).map(val => val ?? '')),
+        head: [this.selectedColumns],
+        body: this.queryData.map((row) => this.selectedColumns.map(col => row[col] ?? '')),
         startY: 30,
         theme: 'striped',
         headStyles: { fillColor: [59, 130, 246] },
@@ -528,18 +819,6 @@ export class ChartComponent implements OnInit {
 
   togglePanel(panel: keyof Panels) {
     this.panels[panel] = !this.panels[panel];
-  }
-
-  openFilter() {
-    alert('Filter functionality not implemented yet.');
-  }
-
-  openSort() {
-    alert('Sort functionality not implemented yet.');
-  }
-
-  openColumns() {
-    alert('Columns functionality not implemented yet.');
   }
 
   viewRow(row: any) {
