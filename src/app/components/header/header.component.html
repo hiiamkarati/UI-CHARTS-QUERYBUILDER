@@ -1,0 +1,24 @@
+<!-- header.component.html -->
+<div class="header-container">
+  <header class="header">
+    <img id="imgtag" (click)="reload()" src="image.png" />
+    <p id="ptag">Query Builder</p>
+    <div class="user-menu">
+      <i class="fa-solid fa-user userIcon" (click)="toggleDropdown()"></i>
+      <div class="dropdown-menu" *ngIf="showDropdown">
+        <div class="dropdown-item username">
+          <a href="/profile">
+            {{ username }}
+          </a>
+        </div>
+        <div class="dropdown-item" (click)="openSettings()">
+          <i class="fa-solid fa-gear"></i> Settings
+        </div>
+        <div class="divider"></div>
+        <div class="dropdown-item logout" (click)="logout()">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </div>
+      </div>
+    </div>
+  </header>
+</div>

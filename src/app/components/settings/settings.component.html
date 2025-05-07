@@ -1,0 +1,47 @@
+<div class="settings-container">
+  <div class="settings-header">
+    <h2>Settings</h2>
+    <button class="close-btn" (click)="closeSettings()">×</button>
+  </div>
+
+  <div class="settings-content">
+    <div class="settings-section">
+      <h3>Appearance</h3>
+      <div class="setting-item">
+        <label for="darkMode">Dark Mode</label>
+        <mat-slide-toggle id="darkMode" [(ngModel)]="darkMode" color="primary">
+        </mat-slide-toggle>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Notifications</h3>
+      <div class="setting-item">
+        <label for="notifications">Enable Notifications</label>
+        <mat-slide-toggle
+          id="notifications"
+          [(ngModel)]="notifications"
+          color="primary"
+        >
+        </mat-slide-toggle>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Language</h3>
+      <div class="setting-item">
+        <label for="language">Select Language</label>
+        <select id="language" [(ngModel)]="language" class="language-select">
+          @for (lang of languages; track lang) {
+          <option [value]="lang">{{ lang }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-footer">
+    <button class="cancel-btn" (click)="closeSettings()">Cancel</button>
+    <button class="save-btn" (click)="saveSettings()">Save Changes</button>
+  </div>
+</div>

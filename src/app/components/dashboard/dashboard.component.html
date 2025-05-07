@@ -1,0 +1,720 @@
+<div class="mainContainer">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&family=Open+Sans&display=swap" rel="stylesheet" />
+
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <app-header></app-header>
+
+  <div class="container">
+    <!-- Left Panel -->
+    <div class="left-panel">
+      <div class="left">
+        <ul>
+          <li>
+            <h6 class="queriestitle">Queries</h6>
+            <button id="addQueryBtn" (click)="addQueries()">+</button>
+          </li>
+        </ul>
+        <div id="queryContainer">
+          <div *ngFor="let query of queries" class="queryItem">
+            <button
+              class="query-button"
+              (click)="openQuery(query)"
+              [ngClass]="{ 'selected-query': selectedQuery?.id === query.id }"
+            >
+              <i class="fa-solid fa-table-list queryopIcons"></i>
+              {{ query.name }}
+            </button>
+            <button class="delete-button" (click)="deleteQuery(query.id)">
+              <i class="fa-solid fa-xmark deleteopIcons"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <div>
+        <ul>
+          <li>
+            <h4 class="charttitle">Charts</h4>
+            <button id="addchartBtn" (click)="addCharts()">+</button>
+          </li>
+        </ul>
+        <div id="chartsContainer">
+          <div *ngFor="let chart of charts" class="queryItem">
+            <button class="query-button">
+              <i class="fa-solid fa-chart-simple queryopIcons"></i>
+              {{ chart.chartName }}
+            </button>
+            <button class="delete-button" (click)="deleteChart(chart.id)">
+              <i class="fa-solid fa-xmark deleteopIcons"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <div>
+        <ul>
+          <li>
+            <h4 class="dashboardtitle">Dashboard</h4>
+            <button id="adddashboardBtn" (click)="addDashboard()">+</button>
+          </li>
+        </ul>
+        <div id="dashboardContainer">
+          <div *ngFor="let dashboard of dashboards" class="queryItem">
+            <button class="query-button">
+              <i class="fa-solid fa-square-poll-horizontal queryopIcons"></i>
+              {{ dashboard.name }}
+            </button>
+            <button class="delete-button" (click)="deleteDashBoard(dashboard.id)">
+              <i class="fa-solid fa-xmark deleteopIcons"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <hr />
+    </div>
+
+    <!-- Center Panel -->
+    <div class="center">
+      <ng-container *ngIf="selectedQuery; else noQueryOpen">
+        <ng-container *ngIf="selectedQuery.selectedTable; else noTable">
+          <div class="table-container">
+            <table border="2">
+              <thead>
+                <tr>
+                  <th
+                    *ngFor="let column of selectedQuery.selectedColumns.length ? selectedQuery.selectedColumns : selectedQuery.allColumns"
+                    (click)="sortTable(column)"
+                    style="cursor: pointer"
+                  >
+                    {{ column }}
+                    <span *ngIf="sortColumn === column" class="sorting">
+                      {{ sortDirection === 'asc' ? ' ▲' : ' ▼' }}
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of paginatedTableData">
+                  <td
+                    *ngFor="let column of selectedQuery.selectedColumns.length ? selectedQuery.selectedColumns : selectedQuery.allColumns"
+                  >
+                    {{ row[column] }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Pagination controls -->
+            <div
+              class="pagination-controls"
+              *ngIf="selectedQuery && selectedQuery.tableData && selectedQuery.tableData.length > 0"
+            >
+              <div class="pagination-left">
+                <span>Rows per page:</span>
+                <select [(ngModel)]="itemsPerPage" (change)="onPageSizeChange()">
+                  <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+                </select>
+              </div>
+              <div class="pagination-right">
+                <span>{{ getPageRangeText() }}</span>
+                <button (click)="previousPage()" [disabled]="currentPage === 1">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #noTable>
+          <h1 class="default-query-message">No Query Available</h1>
+        </ng-template>
+      </ng-container>
+
+      <ng-template #noQueryOpen>
+        <h1 class="default-query-message">Please open a query</h1>
+      </ng-template>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-pannel">
+      <div class="execSql-buttons">
+        <button (click)="viewSql()">View SQL</button>
+        <button (click)="executeQuery()">Execute</button>
+      </div>
+
+      <!-- SQL Template Overlay -->
+      <div class="sqlOverlay" *ngIf="showSqlTemplateOverlay">
+        <div class="sqlOverlay-content sql-template-overlay">
+          <div class="sqlOverlay-header">
+            <h3>SQL Query</h3>
+            <button class="sqlClose-btn" (click)="closeSqlTemplateOverlay()">×</button>
+          </div>
+          <div class="sqlOverlay-body">
+            <div *ngIf="!hasOperations" class="no-operations-message">
+              {{ sqlTemplate }}
+            </div>
+            <div *ngIf="hasOperations" class="sql-code-container">
+              <pre><code>{{ sqlTemplate }}</code></pre>
+              <button class="copy-btn" (click)="copySqlToClipboard()" *ngIf="hasOperations" title="Copy to clipboard">
+                <i class="fa-solid fa-copy" *ngIf="!isCopied"></i>
+                <i class="fa-solid fa-check" *ngIf="isCopied"></i>
+              </button>
+            </div>
+          </div>
+          <div class="sqlOverlay-footer">
+            <button class="sql-history-btn" (click)="showSqlHistory()">SQL History</button>
+            <button class="save-sql-btn" (click)="openSaveSqlOverlay()" *ngIf="hasOperations">Save SQL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save SQL Overlay -->
+      <div class="sqlOverlay" *ngIf="showSaveSqlOverlay">
+        <div class="sqlOverlay-content sql-template-overlay">
+          <div class="sqlOverlay-header">
+            <h3>Save SQL Query</h3>
+            <button class="sqlClose-btn" (click)="closeSaveSqlOverlay()">×</button>
+          </div>
+          <div class="sqlOverlay-body">
+            <form (ngSubmit)="saveSqlQuery()">
+              <label for="queryName">Query Name:</label>
+              <input type="text" id="queryName" [(ngModel)]="queryName" name="queryName" required />
+              <button type="submit">Save</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- SQL History Overlay -->
+      <div class="sqlOverlay" *ngIf="showSqlHistoryOverlay">
+        <div class="sqlOverlay-content sql-template-overlay">
+          <div class="sqlOverlay-header">
+            <h3>SQL History</h3>
+            <button class="sqlClose-btn" (click)="closeSqlHistoryOverlay()">×</button>
+          </div>
+          <div class="sqlOverlay-body">
+            <div *ngIf="sqlHistoryData.length === 0">No saved queries found.</div>
+            <div *ngFor="let historyItem of sqlHistoryData" class="history-item">
+              <h4>{{ historyItem.queryName }}</h4>
+              <pre><code>{{ historyItem.sqlQuery }}</code></pre>
+              <small>Saved: {{ historyItem.savedAt | date: 'medium' }}</small>
+              <small>ID: {{ historyItem.id }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-box">
+        <h4 class="Rdetails">Details</h4>
+        <label for="queryTitle" class="Rqueriestitle">Query Title</label>
+        <input
+          type="text"
+          class="queriestext"
+          [(ngModel)]="queryTitle"
+          (keyup.enter)="updateSelectedQueryName()"
+          [disabled]="!selectedQuery"
+          placeholder="Enter query title"
+        />
+      </div>
+
+      <hr />
+
+      <div>
+        <h4 class="Roperations">Operations</h4>
+      </div>
+      <div class="operations-container">
+        <button (click)="toggleOverlay($event)" class="addOperations" [disabled]="!selectedQuery">+ Add Operations</button>
+
+        <!-- OPERATION OVERLAY -->
+        <div class="overlay" *ngIf="showOverlay" #overlay>
+          <ul>
+            <li (click)="openTableOverlay()"><i class="fa-solid fa-database"></i>Select Source</li>
+            <li (click)="openColumnOverlay()"><i class="fa-solid fa-table-columns"></i>Choose Columns</li>
+            <li (click)="openFilterRowsOverlay()"><i class="fa-solid fa-filter"></i>Filter Rows</li>
+            <li (click)="openJoinTableOverlay(joins.length)"><i class="fa-solid fa-circle-half-stroke"></i>Join Table</li>
+            <li (click)="openAppendTableOverlay()"><i class="fa-solid fa-layer-group"></i>Append Table</li>
+            <li (click)="openAddColumnOverlay()"><i class="fa-solid fa-florin-sign"></i>Add New Column</li>
+            <li (click)="openGroupSummarizeOverlay()"><i class="fa-solid fa-object-group"></i>Group and Summarize</li>
+            <li (click)="openCustomOperationOverlay()"><i class="fa-sharp fa-solid fa-worm"></i>Custom Operation</li>
+          </ul>
+        </div>
+
+        <!-- SELECT TABLE OVERLAY -->
+        <div class="table-overlay" *ngIf="showTableOverlay">
+          <div class="table-overlay-content">
+            <h4>Select a Table</h4>
+            <ul>
+              <li *ngFor="let table of tables" (click)="selectTable(table)">{{ table }}</li>
+            </ul>
+            <button (click)="closeTableOverlay()">Close</button>
+          </div>
+        </div>
+
+        <!-- SELECT COLUMNS OVERLAY -->
+        <div class="column-overlay" *ngIf="showColumnOverlay">
+          <div class="column-overlay-content">
+            <h4>Select Columns</h4>
+            <ul>
+              <li *ngFor="let column of selectedQuery?.allColumns || []">
+                <input
+                  type="checkbox"
+                  [value]="column"
+                  [checked]="selectedQuery?.selectedColumns?.includes(column) || false"
+                  (change)="toggleColumnSelection(column, $event)"
+                />
+                {{ column }}
+                <span class="data-type" *ngIf="dataType[column]"
+                  >({{ dataType[column] === 'Integer' ? 'int' : dataType[column] }})</span
+                >
+              </li>
+            </ul>
+            <button (click)="closeColumnOverlay()">Close</button>
+          </div>
+        </div>
+
+        <!-- CUSTOM COLUMN OVERLAY -->
+        <div class="add-column-overlay" *ngIf="showAddColumnOverlay">
+          <div class="add-column-content">
+            <h3>Add New Column</h3>
+            <label>.Expression:</label>
+            <textarea [(ngModel)]="newColumnExpression" rows="3"></textarea>
+            <label>Column Name:</label>
+            <input type="text" [(ngModel)]="newColumnName" placeholder="Enter column name" />
+            <label>Column Type:</label>
+            <select [(ngModel)]="newColumnType">
+              <option *ngFor="let type of columnTypes" [value]="type">{{ type }}</option>
+            </select>
+            <div class="buttons">
+              <button (click)="confirmAddColumn()">Confirm</button>
+              <button (click)="closeAddColumnOverlay()">Close</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- JOIN TABLE OVERLAY -->
+        <div class="join-table-overlay" *ngIf="showJoinTableOverlay">
+          <div class="join-table-content">
+            <h3>Join Tables</h3>
+            <div *ngFor="let join of joins; let i = index" class="join-row">
+              <div class="join-row-main">
+                <p>Join</p>
+                <select [(ngModel)]="join.joinTable" (ngModelChange)="RightTable($event, i)">
+                  <option value="" disabled selected>Select Right Table</option>
+                  <option
+                    *ngFor="let table of tables"
+                    [value]="table"
+                    [disabled]="table === selectedQuery?.selectedTable"
+                  >
+                    {{ table }}
+                  </option>
+                </select>
+                <select [(ngModel)]="join.joinType">
+                  <option value="" disabled selected>Select Join Type</option>
+                  <option *ngFor="let type of joinTypes" [value]="type">{{ type }}</option>
+                </select>
+                <div class="join-condition">
+                  <select [(ngModel)]="join.sourceColumn">
+                    <option value="" disabled selected>Select Left Column</option>
+                    <option *ngFor="let col of join.sourceColumns" [value]="col">{{ col }}</option>
+                  </select>
+                  <span class="join-operator">=</span>
+                  <select [(ngModel)]="join.targetColumn">
+                    <option value="" disabled selected>Select Right Column</option>
+                    <option *ngFor="let col of join.targetColumns" [value]="col">{{ col }}</option>
+                  </select>
+                </div>
+              </div>
+              <button class="join-row-delete-btn" (click)="removeJoin(i)" *ngIf="joins.length > 1">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+            <div class="join-row-actions">
+              <button class="join-row-add-btn" (click)="addJoin()">Add Join</button>
+              <div class="join-row-actions-right-btns">
+                <button (click)="clearJoins()" *ngIf="joins.length > 0">Clear</button>
+                <button (click)="applyJoins()" *ngIf="joins.length > 0">Apply Joins</button>
+                <button (click)="closeJoinTableOverlay()">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- APPEND TABLE OVERLAY -->
+        <div class="append-table-overlay" *ngIf="showAppendTableOverlay">
+          <div class="append-table-overlay-content">
+            <h4>Append Table</h4>
+            <label>Select Table to Append:</label>
+            <select [(ngModel)]="selectedTableToAppend">
+              <option value="" disabled selected>Select a table</option>
+              <option
+                *ngFor="let table of tables"
+                [value]="table"
+                [disabled]="table === selectedQuery?.selectedTable"
+              >
+                {{ table }}
+              </option>
+            </select>
+            <label>Drop Duplicates?</label>
+            <select [(ngModel)]="dropDuplicates">
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+            <div class="append-table-actions">
+              <button (click)="confirmAppendTable()">Confirm</button>
+              <button (click)="closeAppendTableOverlay()">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CUSTOM OPERATIONS OVERLAY -->
+        <div class="custom-oper-overlay" *ngIf="showCustomOperationOverlay">
+          <div class="custom-oper-overlay-content">
+            <h4>Custom Operation</h4>
+            <label for="customExpression">Enter Custom Expression:</label>
+            <textarea
+              id="customExpression"
+              [(ngModel)]="customExpression"
+              rows="6"
+              placeholder="Write your custom operation here..."
+            ></textarea>
+            <div class="custom-oper-actions">
+              <button (click)="confirmCustomOperation()">Confirm</button>
+              <button (click)="closeCustomOperationOverlay()">Close</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILTER ROWS OVERLAY -->
+        <div class="filter-row-overlay" *ngIf="showFilterRowsOverlay">
+          <div class="filter-row-overlay-content">
+            <h4>Filter Rows</h4>
+            <div *ngFor="let filter of filters; let i = index" class="filter-row">
+              <div class="filter-row-main">
+                <p>Where</p>
+                <select [(ngModel)]="filter.column" (ngModelChange)="updateOperations(i)">
+                  <option value="" disabled selected>Select a column</option>
+                  <option
+                    *ngFor="let column of selectedQuery?.allColumns"
+                    [value]="column"
+                    [disabled]="isColumnDisabled(column, i)"
+                  >
+                    {{ column }} ({{ dataType[column] === 'Integer' ? 'int' : dataType[column] || 'unknown' }})
+                  </option>
+                </select>
+                <select [(ngModel)]="filter.operation">
+                  <option value="" disabled selected>Select an operation</option>
+                  <option *ngFor="let op of filter.availableOperations" [value]="op">{{ op }}</option>
+                </select>
+                <!-- Single value select for non-IN and non-between operations -->
+                <select
+                  [(ngModel)]="filter.value"
+                  *ngIf="filter.operation && filter.operation !== 'between' && filter.operation !== 'IN'"
+                >
+                  <option value="" disabled selected>Select a value</option>
+                  <option *ngFor="let val of filter.availableValues" [value]="val">{{ val }}</option>
+                </select>
+                <!-- Checkboxes for IN operation -->
+                <div
+                  *ngIf="filter.operation === 'IN'"
+                  class="checkbox-container"
+                >
+                  <div
+                    *ngFor="let val of filter.availableValues"
+                    class="checkbox-item"
+                  >
+                    <input
+                      type="checkbox"
+                      [value]="val"
+                      [checked]="filter.values.includes(val)"
+                      (change)="toggleFilterValue(filter, val, $event)"
+                    />
+                    <label>{{ val }}</label>
+                  </div>
+                </div>
+                <!-- Between operation inputs -->
+                <div *ngIf="filter.operation === 'between'" class="between-inputs">
+                  <ng-container [ngSwitch]="dataType[filter.column]">
+                    <!-- DateTime: Use date picker -->
+                    <ng-container *ngSwitchCase="'DateTime'">
+                      <input
+                        type="date"
+                        [(ngModel)]="filter.valueStart"
+                        placeholder="Start date"
+                        [attr.max]="filter.valueEnd || '9999-12-31'"
+                      />
+                      <span>to</span>
+                      <input
+                        type="date"
+                        [(ngModel)]="filter.valueEnd"
+                        placeholder="End date"
+                        [attr.min]="filter.valueStart || '0000-01-01'"
+                      />
+                      <small class="date-note">Select valid dates (e.g., 2024-01-01 to 2024-12-31)</small>
+                    </ng-container>
+                    <!-- Integer: Use number input -->
+                    <ng-container *ngSwitchCase="'Integer'">
+                      <input
+                        type="number"
+                        [(ngModel)]="filter.valueStart"
+                        placeholder="Min value"
+                        step="1"
+                      />
+                      <span>to</span>
+                      <input
+                        type="number"
+                        [(ngModel)]="filter.valueEnd"
+                        placeholder="Max value"
+                        step="1"
+                      />
+                    </ng-container>
+                    <!-- Decimal: Use number input -->
+                    <ng-container *ngSwitchCase="'Decimal'">
+                      <input
+                        type="number"
+                        [(ngModel)]="filter.valueStart"
+                        placeholder="Min value"
+                        step="any"
+                      />
+                      <span>to</span>
+                      <input
+                        type="number"
+                        [(ngModel)]="filter.valueEnd"
+                        placeholder="Max value"
+                        step="any"
+                      />
+                    </ng-container>
+                    <!-- Fallback for other types -->
+                    <ng-container *ngSwitchDefault>
+                      <input
+                        type="text"
+                        [(ngModel)]="filter.valueStart"
+                        placeholder="Start value"
+                      />
+                      <span>to</span>
+                      <input
+                        type="text"
+                        [(ngModel)]="filter.valueEnd"
+                        placeholder="End value"
+                      />
+                      <small class="type-note">Enter values for {{ dataType[filter.column] || 'unknown' }} type</small>
+                    </ng-container>
+                  </ng-container>
+                </div>
+                <select [(ngModel)]="filter.condition" *ngIf="i !== filters.length - 1">
+                  <option value="AND">AND</option>
+                  <option value="OR">OR</option>
+                </select>
+              </div>
+              <button class="filter-row-delete-btn" (click)="removeFilter(i)">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+            <div class="filter-row-actions">
+              <button class="filter-row-add-btn" (click)="addFilter()">Add Filter</button>
+              <div class="filter-row-actions-right-btns">
+                <button (click)="clearFilters()" *ngIf="filters.length > 0">Clear</button>
+                <button (click)="applyFilters()" *ngIf="filters.length > 0">Apply Filters</button>
+                <button (click)="closeFilterRowsOverlay()">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GROUP AND SUMMARIZE OVERLAY -->
+        <div class="gas-overlay" *ngIf="showGroupSummarizeOverlay">
+          <div class="gas-overlay-content">
+            <h4>Group and Summarize</h4>
+            <div class="gas-grouping-container-scrollbar">
+              <!-- Grouping Section -->
+              <div *ngFor="let group of groups; let i = index" class="gas-grouping-container">
+                <label>Group By Column:</label>
+                <select [(ngModel)]="group.groupByColumn" (ngModelChange)="updateGroupByColumnType(i)">
+                  <option value="" disabled selected>Select a column</option>
+                  <option *ngFor="let column of selectedQuery?.allColumns" [value]="column">
+                    {{ column }} ({{ dataType[column] === 'Integer' ? 'int' : dataType[column] || 'unknown' }})
+                  </option>
+                </select>
+                <label>Aggregate Function:</label>
+                <select [(ngModel)]="group.aggregateFunction">
+                  <option value="" disabled selected>Select a function</option>
+                  <option *ngFor="let func of aggregateFunctions" [value]="func">{{ func }}</option>
+                </select>
+                <label>Column to Apply Aggregation On:</label>
+                <select [(ngModel)]="group.aggregateColumn" (ngModelChange)="updateAggregateColumnType(i)">
+                  <option value="" disabled selected>Select a column</option>
+                  <option *ngFor="let column of selectedQuery?.allColumns" [value]="column">
+                    {{ column }} ({{ dataType[column] === 'Integer' ? 'int' : dataType[column] || 'unknown' }})
+                  </option>
+                </select>
+                <button class="gas-remove-btn" (click)="removeGrouping(i)" *ngIf="groups.length > 1">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Having Conditions Section -->
+            <div class="having-conditions-container">
+              <h5>Having Conditions</h5>
+              <div *ngFor="let having of havingConditions; let i = index" class="having-condition">
+                <label>Aggregate Column:</label>
+                <select [(ngModel)]="having.aggregateColumn" (ngModelChange)="updateHavingOperators(i)">
+                  <option value="" disabled selected>Select a column</option>
+                  <option *ngFor="let col of getAggregateColumns()" [value]="col">
+                    {{ col }} ({{ dataType[col] === 'Integer' ? 'int' : dataType[col] || 'unknown' }})
+                  </option>
+                </select>
+                <label>Operator:</label>
+                <select [(ngModel)]="having.operator">
+                  <option value="" disabled selected>Select an operator</option>
+                  <option *ngFor="let op of having.availableOperators" [value]="op">{{ op }}</option>
+                </select>
+                <label>Value:</label>
+                <input [(ngModel)]="having.value" type="text" placeholder="Enter value" />
+                <label *ngIf="havingConditions.length > 1 && i < havingConditions.length - 1">Logical Operator:</label>
+                <select [(ngModel)]="having.logicalOperator" *ngIf="havingConditions.length > 1 && i < havingConditions.length - 1">
+                  <option value="AND">AND</option>
+                  <option value="OR">OR</option>
+                </select>
+                <button class="having-remove-btn" (click)="removeHavingCondition(i)" *ngIf="havingConditions.length > 0">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+              <button class="having-add-btn" (click)="addHavingCondition()" [disabled]="getAggregateColumns().length === 0">
+                Add Having Condition
+              </button>
+            </div>
+
+            <div class="bottombtns-gas">
+              <div class="gas-add-btn">
+                <button (click)="addGrouping()">Add Grouping</button>
+              </div>
+              <div class="gas-actions">
+                <button (click)="clearGroupings()">Clear</button>
+                <button (click)="applyGroupings()">Apply</button>
+                <button (click)="closeGroupSummarizeOverlay()">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SELECTED INFO -->
+        <div class="selected_div">
+          <div *ngIf="selectedQuery?.selectedTable" class="selected_jointable">
+            <div>
+              <i class="fa-solid fa-database opIcons"></i>
+              <span>Select</span>
+            </div>
+            <div
+              class="highlightValues"
+              (click)="editTable()"
+              #selectTable
+              (mouseenter)="showTooltip(selectTable, selectedQuery?.selectedTable)"
+              (mouseleave)="hideTooltip()"
+            >
+              {{ selectedQuery?.selectedTable }}
+            </div>
+          </div>
+          <div *ngIf="selectedQuery && selectedQuery.selectedColumns.length > 0" class="selected_jointable">
+            <div>
+              <i class="fa-solid fa-table-columns opIcons"></i>
+              <span>Selected</span>
+            </div>
+            <div class="highlightValues" (click)="editColumn()">
+              {{ selectedQuery.selectedColumns.length }} Columns
+            </div>
+          </div>
+          <div *ngIf="selectedQuery && selectedQuery.joins.length > 0" class="selected_table">
+            <div style="display: flex">
+              <i class="fa-solid fa-circle-half-stroke opIcons" style="margin-top: 4px"></i>
+              <span>Join</span>
+            </div>
+            <div class="join_selected">
+              <span
+                *ngFor="let join of joins; let i = index"
+                class="highlightValues"
+                (click)="editJoin(i)"
+                #joinTableSpan
+                (mouseenter)="showTooltip(joinTableSpan, join.joinTable)"
+                (mouseleave)="hideTooltip()"
+              >
+                {{ join.joinTable }} ({{ join.joinType }})
+              </span>
+            </div>
+          </div>
+          <div *ngIf="selectedQuery?.selectedTableToAppend" class="selected_jointable">
+            <div>
+              <i class="fa-solid fa-layer-group opIcons"></i>
+              <span>Append</span>
+            </div>
+            <div>
+              <span
+                (click)="editappendtable()"
+                class="highlightValues"
+                #appendSpan
+                (mouseenter)="showTooltip(appendSpan, selectedQuery?.selectedTableToAppend)"
+                (mouseleave)="hideTooltip()"
+              >
+                {{ selectedQuery?.selectedTableToAppend }}
+              </span>
+            </div>
+          </div>
+          <div *ngIf="groups.length > 0" class="selected_table">
+            <div style="display: flex">
+              <i class="fa-solid fa-object-group opIcons" style="margin-top: 4px"></i>
+              <span>GroupBy</span>
+            </div>
+            <div class="gas_selected">
+              <span
+                (click)="editgroupby()"
+                *ngFor="let group of groups; let i = index"
+                #groupSpan
+                (mouseenter)="showTooltip(groupSpan, group.groupByColumn)"
+                (mouseleave)="hideTooltip()"
+                class="highlightValues"
+              >
+                {{ group.groupByColumn }}
+              </span>
+            </div>
+          </div>
+          <div *ngIf="filters.length > 0" class="selected_table" style="margin-top: 7px">
+            <div style="display: flex">
+              <i class="fa-solid fa-filter opIcons" style="margin-top: 4px"></i>
+              <span>Filter</span>
+            </div>
+            <div class="Derivatives_selected">
+              <span
+                (click)="editFilter()"
+                *ngFor="let filter of filters; let i = index"
+                class="highlightValues"
+                #filterSpan
+                (mouseenter)="showTooltip(filterSpan, filter.column)"
+                (mouseleave)="hideTooltip()"
+              >
+                {{ filter.column }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tooltip -->
+        <div class="custom-tooltip" *ngIf="tooltipVisible" [ngStyle]="tooltipStyles">
+          {{ tooltipText }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

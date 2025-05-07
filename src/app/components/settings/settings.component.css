@@ -1,0 +1,119 @@
+.settings-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 500px;
+  max-width: 90%;
+  margin: 50px auto;
+  overflow: hidden;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.settings-header h2 {
+  margin: 0;
+  color: #444;
+  font-weight: 500;
+  font-size: 20px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: #666;
+}
+
+.settings-content {
+  padding: 20px;
+}
+
+.settings-section {
+  margin-bottom: 24px;
+}
+
+.settings-section h3 {
+  font-size: 16px;
+  color: #444;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 8px 0;
+}
+
+.setting-item label {
+  color: #666;
+  font-size: 14px;
+}
+
+/* Select Dropdown */
+.language-select {
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: white;
+  min-width: 150px;
+  color: #666;
+  font-size: 14px;
+}
+
+.language-select:focus {
+  outline: none;
+  border-color: #2196f3;
+}
+
+.settings-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid #f0f0f0;
+  gap: 12px;
+}
+
+.cancel-btn,
+.save-btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.cancel-btn {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  color: #666;
+}
+
+.save-btn {
+  background-color: #2196f3;
+  border: none;
+  color: white;
+}
+
+.save-btn:hover {
+  background-color: #0b7dda;
+}
+
+.cancel-btn:hover {
+  background-color: #f8f9fa;
+}

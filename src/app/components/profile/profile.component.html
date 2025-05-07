@@ -1,0 +1,131 @@
+<head>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+   
+  <div class="profile-page">
+    <div class="profile-container">
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="cover-photo"></div>
+          <div class="profile-avatar">
+            <img src="image2.jpeg" alt="pp"/>
+          </div>
+          <div class="profile-name">
+            <h1 *ngIf="!isEditing">
+              {{ userProfile.firstName }} {{ userProfile.lastName }}
+            </h1>
+            <div *ngIf="isEditing" class="edit-name-container">
+              <input
+                type="text"
+                [(ngModel)]="editedProfile.firstName"
+                placeholder="First Name"
+              />
+              <input
+                type="text"
+                [(ngModel)]="editedProfile.lastName"
+                placeholder="Last Name"
+              />
+            </div>
+            <span class="username" *ngIf="!isEditing">{{
+              userProfile.username
+            }}</span>
+            <input
+              *ngIf="isEditing"
+              type="text"
+              [(ngModel)]="editedProfile.username"
+              class="username-input"
+              placeholder="Username"
+            />
+          </div>
+        </div>
+   
+        <div class="profile-body">
+          <div class="section-title">
+            <i class="fa-solid fa-user"></i>
+            <h2>Personal Information</h2>
+          </div>
+   
+          <div class="info-container">
+            <div class="info-card">
+              <div class="info-icon">
+                <i class="fa-solid fa-envelope"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Email</span>
+                <span class="info-value" *ngIf="!isEditing">{{
+                  userProfile.email
+                }}</span>
+                <input
+                  *ngIf="isEditing"
+                  type="email"
+                  [(ngModel)]="editedProfile.email"
+                  class="edit-input"
+                  placeholder="Email"
+                />
+              </div>
+            </div>
+   
+            <div class="info-card">
+              <div class="info-icon">
+                <i class="fa-solid fa-phone"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Phone</span>
+                <span class="info-value" *ngIf="!isEditing">{{
+                  userProfile.phone
+                }}</span>
+                <input
+                  *ngIf="isEditing"
+                  type="tel"
+                  [(ngModel)]="editedProfile.phone"
+                  class="edit-input"
+                  placeholder="Phone"
+                />
+              </div>
+            </div>
+   
+            <div class="info-card">
+              <div class="info-icon">
+                <i class="fa-solid fa-location-dot"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Address</span>
+                <span class="info-value" *ngIf="!isEditing">{{
+                  userProfile.address
+                }}</span>
+                <input
+                  *ngIf="isEditing"
+                  type="text"
+                  [(ngModel)]="editedProfile.address"
+                  class="edit-input"
+                  placeholder="Address"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+   
+        <div class="profile-footer">
+          <button
+            *ngIf="!isEditing"
+            class="btn primary-btn"
+            (click)="toggleEdit()"
+          >
+            <i class="fa-solid fa-pen"></i> Edit Profile
+          </button>
+          <button *ngIf="isEditing" class="btn save-btn" (click)="saveProfile()">
+            <i class="fa-solid fa-save"></i> Save Changes
+          </button>
+          <button *ngIf="isEditing" class="btn cancel-btn" (click)="cancelEdit()">
+            <i class="fa-solid fa-times"></i> Cancel
+          </button>
+          <button *ngIf="!isEditing" class="btn secondary-btn" (click)="goBack()">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

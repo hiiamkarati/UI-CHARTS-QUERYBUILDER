@@ -1,0 +1,227 @@
+<div class="query-builder-container">
+  <div class="title-container">
+    <i class="fas fa-database query-builder-logo"></i>
+    <h1 class="query-builder-title">QueryBuilder</h1>
+  </div>
+  <div class="button-group">
+    <button (click)="onExport()" class="btn btn-export">
+      <i class="fas fa-file-export btn-icon"></i> Export
+    </button>
+    <button (click)="onSave()" class="btn btn-save">
+      <i class="fas fa-floppy-disk btn-icon"></i> Save
+    </button>
+    <button (click)="onRunQuery()" class="btn btn-run">
+      <i class="fas fa-play btn-icon"></i> Run Query
+    </button>
+  </div>
+</div>
+
+<div class="query-results-container">
+  <div class="query-results-header">
+    <span class="query-results-title">Customer Data Query Results</span>
+    <span class="query-timestamp">{{ queryStatus.timestamp }}</span>
+    <span class="query-status" [class.success]="queryStatus.status === 'Successful'" [class.error]="queryStatus.status === 'Failed'">
+      {{ queryStatus.status }}
+    </span>
+    <span class="query-info execution-time">Execution time: {{ queryStatus.executionTime }}s</span>
+    <span class="query-info">{{ queryStatus.rowsReturned }} rows returned</span>
+  </div>
+
+  <!-- Visualization Section -->
+  <div class="visualization-section">
+    <h3 class="visualization-title">Query Visualization</h3>
+    <div class="chart-selection">
+      <button (click)="selectChart('bar')" 
+              [class.chart-selected]="selectedChart === 'bar'" 
+              class="chart-btn">
+        <i class="fas fa-chart-bar chart-btn-icon"></i> Bar Chart
+      </button>
+      <button (click)="selectChart('line')" 
+              [class.chart-selected]="selectedChart === 'line'" 
+              class="chart-btn">
+        <i class="fas fa-chart-line chart-btn-icon"></i> Line Chart
+      </button>
+      <button (click)="selectChart('pie')" 
+              [class.chart-selected]="selectedChart === 'pie'" 
+              class="chart-btn">
+        <i class="fas fa-chart-pie chart-btn-icon"></i> Pie Chart
+      </button>
+      <button (click)="selectChart(null)" 
+              [class.chart-selected]="!selectedChart" 
+              class="chart-btn">
+        <i class="fas fa-ban chart-btn-icon"></i> No Visualization Selected
+      </button>
+    </div>
+    <div *ngIf="!selectedChart" class="no-visualization-box">
+      <div class="no-visualization-message">
+        <p><strong>No Visualization Selected</strong></p>
+        <p>Select a chart type from the options above</p>
+        <p>to visualize your query results</p>
+      </div>
+      <button (click)="autoVisualize()" class="btn btn-auto">Auto Visualize</button>
+    </div>
+    <p *ngIf="selectedChart" class="visualization-message">Select chart type and axes to visualize your query results</p>
+    <div class="axis-selection" *ngIf="selectedChart">
+      <label>X-Axis:</label>
+      <ng-multiselect-dropdown
+        [placeholder]="'Select X-Axis Columns'"
+        [settings]="dropdownSettings"
+        [data]="columns"
+        [(ngModel)]="xAxis"
+        (onSelect)="onAxisChange()"
+        (onDeSelect)="onAxisChange()"
+        (onSelectAll)="onAxisChange()"
+        (onDeSelectAll)="onAxisChange()">
+      </ng-multiselect-dropdown>
+      <label>Y-Axis:</label>
+      <ng-multiselect-dropdown
+        [placeholder]="'Select Y-Axis Columns'"
+        [settings]="dropdownSettings"
+        [data]="columns"
+        [(ngModel)]="yAxis"
+        (onSelect)="onAxisChange()"
+        (onDeSelect)="onAxisChange()"
+        (onSelectAll)="onAxisChange()"
+        (onDeSelectAll)="onAxisChange()">
+      </ng-multiselect-dropdown>
+    </div>
+    <button *ngIf="selectedChart" (click)="autoVisualize()" class="btn btn-auto">Auto Visualize</button>
+    <div class="chart-container" *ngIf="selectedChart">
+      <canvas baseChart 
+              [data]="chartData" 
+              [options]="chartOptions" 
+              [type]="selectedChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Results Table -->
+  <div class="results-table-container">
+    <div class="table-title-and-export">
+      <h3 class="results-table-title">Results Table</h3>
+      <div class="export-buttons">
+        <button class="export-btn" (click)="exportCsv()">
+          <i class="fas fa-file-csv btn-icon"></i> Export CSV
+        </button>
+        <button class="export-btn" (click)="exportExcel()">
+          <i class="fas fa-file-excel btn-icon"></i> Export Excel
+        </button>
+        <button class="export-btn" (click)="exportPdf()">
+          <i class="fas fa-file-pdf btn-icon"></i> Export PDF
+        </button>
+      </div>
+    </div>
+    <div class="table-controls">
+      <div class="search-and-actions">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" class="search-input" placeholder="Search results..." [(ngModel)]="searchQuery" (input)="onSearch()" />
+        </div>
+        <span class="row-count">{{ totalRows }} rows</span>
+        <div class="table-actions">
+          <button class="table-action-btn" (click)="openFilter()">
+            <i class="fas fa-filter btn-icon"></i> Filter
+          </button>
+          <button class="table-action-btn" (click)="openSort()">
+            <i class="fas fa-sort btn-icon"></i> Sort
+          </button>
+          <button class="table-action-btn" (click)="openColumns()">
+            <i class="fas fa-columns btn-icon"></i> Columns
+          </button>
+        </div>
+      </div>
+    </div>
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th *ngFor="let column of availableColumns" (click)="sortTable(column)" [class.asc]="sortColumn === column && sortDirection === 'asc'" [class.desc]="sortColumn === column && sortDirection === 'desc'">
+            {{ column }}
+          </th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of paginatedData; let i = index" @rowFadeIn (click)="onRowClick(row)">
+          <td *ngFor="let column of availableColumns">{{ row[column] }}</td>
+          <td>
+            <div class="three-dot-menu">
+              <button class="three-dot-btn" (click)="toggleMenu(i)">
+                <span class="btn-icon">⋮</span>
+              </button>
+              <div class="three-dot-menu-content" [ngClass]="{'show': showMenuIndex === i}">
+                <button (click)="viewRow(row)">View</button>
+                <button (click)="editRow(row)">Edit</button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="pagination">
+      <select [(ngModel)]="rowsPerPage" (change)="onRowsPerPageChange()">
+        <option [value]="5">5 rows per page</option>
+        <option [value]="10">10 rows per page</option>
+        <option [value]="25">25 rows per page</option>
+      </select>
+      <p class="pagination-info">Showing {{ (currentPage - 1) * rowsPerPage + 1 }}-{{ currentPage * rowsPerPage > totalRows ? totalRows : currentPage * rowsPerPage }} of {{ totalRows }} results</p>
+      <button class="pagination-btn" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+      <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </div>
+
+  <!-- Query Details Section -->
+  <div class="query-details-section">
+    <h3 class="query-details-title">Query Details</h3>
+    <div class="query-details-panel">
+      <div class="query-details-panel-header" (click)="togglePanel('sql')">
+        View SQL
+      </div>
+      <div class="query-details-panel-content" *ngIf="panels.sql">
+        <pre>{{ sqlQuery }}</pre>
+      </div>
+    </div>
+    <div class="query-details-panel">
+      <div class="query-details-panel-header" (click)="togglePanel('dataSource')">
+        Data Source
+      </div>
+      <div class="query-details-panel-content" *ngIf="panels.dataSource">
+        <p><strong>Source:</strong> Customer Data</p>
+        <p><strong>Type:</strong> PostgreSQL Database</p>
+        <p><strong>Last Updated:</strong> April 16, 2025</p>
+      </div>
+    </div>
+    <div class="query-details-panel">
+      <div class="query-details-panel-header" (click)="togglePanel('parameters')">
+        Query Parameters
+      </div>
+      <div class="query-details-panel-content" *ngIf="panels.parameters">
+        <p><strong>Sort By:</strong> registration_date (Descending)</p>
+        <p><strong>Limit:</strong> 5 rows</p>
+        <p><strong>Filters:</strong> None</p>
+      </div>
+    </div>
+    <div class="query-details-panel">
+      <div class="query-details-panel-header" (click)="togglePanel('columns')">
+        Selected Columns
+      </div>
+      <div class="query-details-panel-content" *ngIf="panels.columns">
+        <ul>
+          <li *ngFor="let col of selectedColumns">{{ col }}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="query-details-panel">
+      <div class="query-details-panel-header" (click)="togglePanel('filters')">
+        Applied Filters
+      </div>
+      <div class="query-details-panel-content" *ngIf="panels.filters">
+        <p>No filters have been applied to this query</p>
+      </div>
+    </div>
+    <div class="query-action-buttons">
+      <button class="query-action-btn" (click)="editQuery()">Edit Query</button>
+      <button class="query-action-btn" (click)="duplicateQuery()">Duplicate Query</button>
+      <button class="query-action-btn" (click)="shareResults()">Share Results</button>
+      <button class="query-action-btn" (click)="scheduleQuery()">Schedule</button>
+    </div>
+  </div>
+</div>
