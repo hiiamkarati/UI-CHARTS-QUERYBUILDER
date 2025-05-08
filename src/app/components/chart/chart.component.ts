@@ -66,6 +66,7 @@ export class ChartComponent implements OnInit {
   chartTypes: ChartType[] = ['bar', 'line', 'pie'];
   chartData: ChartConfiguration['data'] = { labels: [], datasets: [] };
   chartOptions: ChartConfiguration['options'] = {
+    aspectRatio: 1.0, // Adjusted to make chart taller
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -111,7 +112,12 @@ export class ChartComponent implements OnInit {
         beginAtZero: true,
         display: true,
         grid: { color: 'rgba(209, 213, 219, 0.3)' },
-        ticks: { color: '#1f2937', font: { size: 12 } },
+        ticks: {
+          color: '#1f2937',
+          font: { size: 12 },
+          stepSize: 10,
+        },
+        max: 50, // Default max
       },
       x: {
         display: true,
@@ -193,6 +199,10 @@ export class ChartComponent implements OnInit {
   queryRequestBody: QueryRequestBody | null = null;
   isLoading = false;
   showMenuIndex: number | null = null;
+
+  // New properties for chart data limit
+  chartDataLimit: number | 'all' = 10; // Default to first 10 data points
+  chartDataLimitOptions: (number | 'all')[] = [10, 50, 100, 'all'];
 
   constructor(private apiService: ApiService, private queryService: QueryService) {}
 
@@ -324,7 +334,11 @@ export class ChartComponent implements OnInit {
       return;
     }
 
-    const labels = this.queryData.map((row) => {
+    // Limit data based on chartDataLimit
+    const limit = this.chartDataLimit === 'all' ? this.queryData.length : this.chartDataLimit;
+    const limitedData = this.queryData.slice(0, limit);
+
+    const labels = limitedData.map((row) => {
       if (this.xAxisColumns.length === 1) {
         const value = row[this.xAxisColumns[0]];
         return value != null ? String(value) : 'Unknown';
@@ -336,8 +350,22 @@ export class ChartComponent implements OnInit {
 
     const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
+    // Calculate dynamic max for y-axis
+    let maxYValue = 50; // Default max
+    if (limitedData.length && this.yAxisColumns.length) {
+      const maxValues = this.yAxisColumns.map(yCol => {
+        const values = limitedData.map(row => {
+          const value = row[yCol];
+          return value != null && !isNaN(Number(value)) ? Number(value) : 0;
+        });
+        return Math.max(...values);
+      });
+      const dataMax = Math.max(...maxValues);
+      maxYValue = Math.max(50, Math.ceil(dataMax / 10) * 10); // Round up to nearest multiple of 10
+    }
+
     if (this.selectedChart === 'pie') {
-      const aggregatedData = this.queryData.map((row) => {
+      const aggregatedData = limitedData.map((row) => {
         return this.yAxisColumns.reduce((sum, col) => {
           const value = row[col];
           return sum + (value != null && !isNaN(Number(value)) ? Number(value) : 0);
@@ -357,7 +385,7 @@ export class ChartComponent implements OnInit {
       };
     } else {
       const datasets = this.yAxisColumns.map((yCol, index) => {
-        const values = this.queryData.map((row) => {
+        const values = limitedData.map((row) => {
           const value = row[yCol];
           return value != null && !isNaN(Number(value)) ? Number(value) : 0;
         });
@@ -387,12 +415,18 @@ export class ChartComponent implements OnInit {
     // Update chart options based on chart type
     this.chartOptions = {
       ...this.chartOptions,
+      aspectRatio: 1.0, // Adjusted to make chart taller
       scales: {
         y: {
           beginAtZero: true,
           display: this.selectedChart !== 'pie',
           grid: { color: 'rgba(209, 213, 219, 0.3)' },
-          ticks: { color: '#1f2937', font: { size: 12 } },
+          ticks: {
+            color: '#1f2937',
+            font: { size: 12 },
+            stepSize: 10,
+          },
+          max: maxYValue,
         },
         x: {
           display: this.selectedChart !== 'pie',
@@ -407,6 +441,11 @@ export class ChartComponent implements OnInit {
         },
       },
     };
+  }
+
+  // New method to handle chart data limit changes
+  onChartDataLimitChange() {
+    this.updateChartData();
   }
 
   handleChartClick(label: any, datasetLabel: any, index: number) {

@@ -1,3 +1,4 @@
+
 /* Global Reset for Consistency */
 * {
   margin: 0;
@@ -66,19 +67,20 @@ html {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(240, 245, 255, 0.9));
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  margin: 1.5rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  animation: fadeIn 0.6s ease-out;
-  transition: transform 0.3s ease;
+  padding: 1rem;
+  background: white;
+  
+  /* border: 1px solid rgba(255, 255, 255, 0.2); */
+  border-radius: 0px; 
+  margin:0;
+  /* margin-bottom: 0.5rem; */
+  /* box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); */
+  /* animation: fadeIn 0.6s ease-out;
+  transition: transform 0.3s ease; */
 }
 
 .query-builder-container:hover {
-  transform: translateY(-4px);
+  transform: translateY(0);
 }
 
 /* Title Container */
@@ -86,6 +88,7 @@ html {
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-left:1rem;
 }
 
 /* Query Builder Logo */
@@ -93,6 +96,7 @@ html {
   font-size: 2rem;
   color: #1e3a8a;
   transition: transform 0.3s ease, color 0.3s ease;
+ 
 }
 
 .query-builder-logo:hover {
@@ -104,13 +108,13 @@ html {
 .query-builder-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1e3a8a;
+  color: black;
   letter-spacing: -0.02em;
-  transition: color 0.3s ease;
+  /* transition: color 0.3s ease; */
 }
 
 .query-builder-title:hover {
-  color: #2563eb;
+  color: black;
 }
 
 /* Button Group */
@@ -125,18 +129,20 @@ html {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem 0.75rem 2.5rem; /* Adjusted for icon */
-  font-size: 0.875rem;
-  font-weight: 600;
+  padding: 0.5rem 1rem 0.5rem 1rem; /* Adjusted for icon */
+  font-size: 1rem;
+  font-weight: 500;
   color: #000000;
-  background: transparent;
-  border: none;
+  background: rgb(175, 174, 174);
+  border:  none;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
   position: relative;
   overflow: hidden;
+  border-color: black;
+  
 }
 
 .btn::before {
@@ -148,16 +154,17 @@ html {
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: 0.5s;
-}
+} 
 
-.btn:hover::before {
+/* .btn:hover::before {
   left: 100%;
-}
+} */
 
 .btn:hover {
   background: #e5e7eb;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transform:translateY(0);
+  /* box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); */
+  border: 1px solid black;
 }
 
 .btn:focus {
@@ -166,7 +173,6 @@ html {
 }
 
 .btn:active {
-  transform: translateY(0);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -174,23 +180,43 @@ html {
   color: #9ca3af;
   cursor: not-allowed;
   box-shadow: none;
-}
+} 
 
 /* Button Icon */
 .btn-icon {
   font-size: 1rem;
   color: #000000;
-  transition: transform 0.3s ease;
 }
 
-.btn:hover .btn-icon {
-  transform: rotate(10deg);
+.btn-icon:hover{
+  transform:translateY(0);
+  transform: rotate(0);
+  transform: scale(0);
+}
+
+.btn btn-export{
+  transform:translateY(-20px);
 }
 
 /* Specific Button Classes */
-.btn-export, .btn-save, .btn-run {
+.btn-export, .btn-save {
   background: transparent;
   color: #000000;
+  background: rgb(230, 227, 227);
+}
+
+
+.btn-run{
+  background-color: #7198ec;
+  color: black;
+  margin-right: 1.8rem;
+}
+
+.btn-run:hover {
+  background: #5588f5;
+  transform:translateY(0);
+  /* box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); */
+  border: 1px solid black;
 }
 
 .btn-export::before {
@@ -200,7 +226,6 @@ html {
   font-size: 1rem;
   color: #000000;
   margin-right: 0.5rem;
-  transition: transform 0.3s ease;
 }
 
 .btn-save::before {
@@ -210,7 +235,7 @@ html {
   font-size: 1rem;
   color: #000000;
   margin-right: 0.5rem;
-  transition: transform 0.3s ease;
+  
 }
 
 .btn-run::before {
@@ -220,7 +245,6 @@ html {
   font-size: 1rem;
   color: #000000;
   margin-right: 0.5rem;
-  transition: transform 0.3s ease;
 }
 
 /* Three Dot Menu */
@@ -286,15 +310,19 @@ html {
 
 /* Query Results Container */
 .query-results-container {
-  padding: 2rem;
+  padding: 1.5rem;
   background: #ffffff;
-  margin: 2rem auto;
-  max-width: 1280px;
+  margin: 1rem;
+  max-width: 1380px;
   border-radius: 12px;
   border: 1px solid rgba(209, 213, 219, 0.3);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   animation: fadeIn 0.6s ease-out;
+  
+  height: 76px;
+
 }
+
 
 /* Query Results Header */
 .query-results-header {
@@ -302,18 +330,19 @@ html {
   align-items: center;
   gap: 1.5rem;
   flex-wrap: wrap;
-  justify-content: center;
-  background: linear-gradient(145deg, rgba(240, 245, 255, 0.95), rgba(224, 231, 255, 0.9));
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 2rem;
+  justify-content:left;
+  background: white;
+  /* padding: 1.5rem; */
+  border-radius: 7px;
+  box-shadow: 50x 7px 15px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1.5rem;
   transition: all 0.3s ease;
+  
 }
 
 .query-results-header:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(0);
+  box-shadow: 0;
 }
 
 /* Query Results Title */
@@ -323,10 +352,12 @@ html {
   color: #000000;
   letter-spacing: -0.02em;
   transition: color 0.3s ease;
+ text-align: left;
 }
 
 .query-results-title:hover {
-  color: #374151;
+  color: #000000;
+
 }
 
 /* Query Timestamp */
@@ -335,13 +366,14 @@ html {
   font-weight: 500;
   color: #4b5563;
   background: #e5e7eb;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.5rem;
   border-radius: 6px;
   transition: all 0.3s ease;
+  margin-left: 15rem;
 }
 
 .query-timestamp:hover {
-  background: #d1d5db;
+  background: #a1a2a4;
   color: #1f2937;
 }
 
@@ -374,6 +406,7 @@ html {
 
 .query-status.success:hover {
   transform: translateY(-2px);
+  background-color: rgb(108, 203, 108);
 }
 
 .query-status.error {
@@ -407,6 +440,7 @@ html {
   border-radius: 6px;
   transition: all 0.3s ease;
   position: relative;
+  background: #f1b3b3
 }
 
 .query-info:not(.execution-time)::before {
@@ -438,18 +472,37 @@ html {
 }
 
 .query-info.execution-time:hover {
-  background: #7dd3fc;
+  background: #65c0ea;
   transform: translateY(-2px);
 }
 
 .query-info:hover {
-  background: #e5e7eb;
+  background: #e37c7c;
   transform: translateY(-2px);
+  
 }
 
 /* Visualization Section */
 .visualization-section {
-  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background: #ffffff;
+  margin: 1rem;
+  
+  max-width: 1380px;
+  border-radius: 12px;
+  border: 1px solid rgba(209, 213, 219, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Header and Chart Selection Container */
+.header-and-chart-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: nowrap;
 }
 
 /* Visualization Title */
@@ -457,29 +510,24 @@ html {
   font-size: 1.5rem;
   font-weight: 700;
   color: #000000;
-  margin-bottom: 1.5rem;
-  transition: color 0.3s ease;
-}
-
-.visualization-title:hover {
-  color: #374151;
+  margin: 0;
+  white-space: nowrap;
 }
 
 /* Chart Selection */
 .chart-selection {
   display: flex;
   gap: 1rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
+  margin-top: 0;
+  justify-content: end;
+  flex-wrap: nowrap;
 }
-
 /* Chart Button */
 .chart-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
   color: #374151;
@@ -884,7 +932,7 @@ ng-multiselect-dropdown {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
-  padding-left: 35rem; /* Adjusted from 35rem for proper alignment */
+  padding-left: 48rem; /* Adjusted from 35rem for proper alignment */
 }
 
 /* Table Action Button */
@@ -1757,5 +1805,228 @@ ng-multiselect-dropdown {
   ::ng-deep .multiselect-dropdown .selected-item a {
     font-size: 0.75rem;
     padding-left: 2px;
+  }
+}
+/* Styles for the chart container to use full page space */
+.chart-container {
+  max-width: none; /* Remove width restriction */
+  min-width: 300px; /* Ensure minimum width for chart rendering */
+  height: calc(100vh - 200px); /* Full height minus space for header, dropdowns, etc. */
+  margin: 10px 0; /* Minimal vertical margin */
+  padding: 20px 0 0 0; /* Add top padding to shift chart down */
+  box-sizing: border-box;
+  background-color: transparent;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .chart-container {
+    height: calc(100vh - 250px); /* Adjust for smaller screens */
+    min-width: 200px;
+    padding: 15px 0 0 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-container {
+    height: calc(100vh - 300px); /* Further adjust for mobile */
+    min-width: 150px;
+    padding: 10px 0 0 0;
+  }
+}
+
+/* Styles for the axis-selection container */
+.axis-selection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 30px; /* Increased for more separation from chart */
+}
+
+/* Styles for axis-selection labels */
+.axis-selection label {
+  font-size: 12px;
+  font-weight: 400;
+  color: #1f2937;
+  margin-right: 8px;
+}
+
+/* Styles for the data limit dropdown */
+.axis-selection select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 6px 28px 6px 8px;
+  font-size: 12px;
+  font-family: 'Inter', Arial, sans-serif;
+  font-weight: 400;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #1f2937;
+  cursor: pointer;
+  min-width: 140px;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M1%201L5%205L9%201%22%20stroke%3D%22%231f2937%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+}
+
+/* Styles for multiselect dropdown button */
+::ng-deep .multiselect-dropdown .dropdown-btn {
+  display: inline-block !important;
+  border: 1px solid #adadad !important;
+  padding: 6px 12px !important;
+  margin-bottom: 0 !important;
+  font-weight: 400 !important;
+  line-height: 1.52857143 !important;
+  text-align: left !important;
+  vertical-align: middle !important;
+  cursor: pointer !important;
+  background-image: none !important;
+  border-radius: 4px !important;
+  width: 90%;
+}
+
+/* Chart.js axis styling */
+::ng-deep .chartjs-render-monitor {
+  /* X-axis labels */
+  .chartjs-x-axis-labels text {
+    font-family: 'Inter', Arial, sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    fill: #000000 !important;
+    cursor: pointer;
+    padding-bottom: 5px;
+  }
+
+  /* Y-axis labels */
+  .chartjs-y-axis-labels text {
+    font-family: 'Inter', Arial, sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    fill: #000000 !important;
+    cursor: pointer;
+    padding-left: 5px; /* Add padding to shift labels away from axis */
+  }
+
+  /* X-axis ticks */
+  .chartjs-x-axis-ticks line {
+    stroke: #1f2937 !important;
+    stroke-width: 1.5px !important;
+  }
+
+  /* Y-axis ticks */
+  .chartjs-y-axis-ticks line {
+    stroke: #1f2937 !important;
+    stroke-width: 1.5px !important;
+  }
+
+  /* X-axis grid lines */
+  .chartjs-x-axis-grid line {
+    stroke: #d1d5db !important;
+    stroke-opacity: 0.5 !important;
+    stroke-width: 1px !important;
+  }
+
+  /* Y-axis grid lines */
+  .chartjs-y-axis-grid line {
+    stroke: #d1d5db !important;
+    stroke-opacity: 0.5 !important;
+    stroke-width: 1px !important;
+  }
+
+  /* X-axis line */
+  .chartjs-x-axis line {
+    stroke: #1f2937 !important;
+    stroke-width: 2px !important;
+    stroke-linecap: round !important;
+  }
+
+  /* Y-axis line */
+  .chartjs-y-axis line {
+    stroke: #1f2937 !important;
+    stroke-width: 2px !important;
+    stroke-linecap: round !important;
+  }
+
+  /* Axis background */
+  .chartjs-x-axis,
+  .chartjs-y-axis {
+    background: #f0f5ff !important;
+    border-radius: 4px !important;
+    padding: 4px !important;
+  }
+}
+
+/* Responsive axis and dropdown adjustments */
+@media (max-width: 768px) {
+  .axis-selection {
+    margin-bottom: 20px;
+  }
+  .axis-selection label {
+    font-size: 10px;
+  }
+  .axis-selection select {
+    font-size: 10px;
+    padding: 5px 24px 5px 6px;
+    min-width: 120px;
+    background-size: 8px;
+  }
+  ::ng-deep .multiselect-dropdown .dropdown-btn {
+    font-size: 9px !important;
+    padding: 5px 12px !important;
+    min-width: 120px !important;
+  }
+  ::ng-deep .chartjs-render-monitor {
+    .chartjs-x-axis-labels text,
+    .chartjs-y-axis-labels text {
+      font-size: 12px !important;
+      padding-left: 3px; /* Adjusted for smaller screens */
+    }
+    .chartjs-x-axis-ticks line,
+    .chartjs-y-axis-ticks line {
+      stroke-width: 1px !important;
+    }
+    .chartjs-x-axis line,
+    .chartjs-y-axis line {
+      stroke-width: 1.5px !important;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .axis-selection {
+    margin-bottom: 15px;
+  }
+  .axis-selection label {
+    font-size: 8px;
+  }
+  .axis-selection select {
+    font-size: 8px;
+    padding: 4px 20px 4px 5px;
+    min-width: 100px;
+    background-size: 7px;
+  }
+  ::ng-deep .multiselect-dropdown .dropdown-btn {
+    font-size: 8px !important;
+    padding: 4px 12px !important;
+    min-width: 100px !important;
+  }
+  ::ng-deep .chartjs-render-monitor {
+    .chartjs-x-axis-labels text,
+    .chartjs-y-axis-labels text {
+      font-size: 10px !important;
+      padding-left: 2px; /* Adjusted for mobile */
+    }
+    .chartjs-x-axis-ticks line,
+    .chartjs-y-axis-ticks line {
+      stroke-width: 0.8px !important;
+    }
+    .chartjs-x-axis line,
+    .chartjs-y-axis line {
+      stroke-width: 1px !important;
+    }
   }
 }
