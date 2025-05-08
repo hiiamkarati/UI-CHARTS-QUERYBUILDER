@@ -613,6 +613,8 @@ html {
   margin-bottom: 2rem;
   flex-wrap: wrap;
   justify-content: center;
+  border:0px solid black
+  
 }
 
 .axis-selection label {
@@ -834,7 +836,7 @@ ng-multiselect-dropdown {
   font-size: 0.875rem;
   font-weight: 600;
   color: #000000;
-  background: transparent;
+  background: rgb(200, 198, 198);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -848,9 +850,7 @@ ng-multiselect-dropdown {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
-.export-btn:hover .btn-icon {
-  transform: rotate(10deg);
-}
+
 
 /* Results Table Container */
 .results-table-container {
@@ -953,14 +953,12 @@ ng-multiselect-dropdown {
 }
 
 .table-action-btn:hover {
-  background: #e5e7eb;
+  background: #a2a3a5;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
-.table-action-btn:hover .btn-icon {
-  transform: rotate(10deg);
-}
+
 
 /* Row Count */
 .row-count {
@@ -1095,6 +1093,8 @@ ng-multiselect-dropdown {
   font-size: 0.875rem;
   color: #4b5563;
   font-weight: 500;
+  
+  
 }
 
 /* Query Details Section */
@@ -1876,7 +1876,7 @@ ng-multiselect-dropdown {
 /* Styles for multiselect dropdown button */
 ::ng-deep .multiselect-dropdown .dropdown-btn {
   display: inline-block !important;
-  border: 1px solid #adadad !important;
+  border: 0px solid #adadad !important;
   padding: 6px 12px !important;
   margin-bottom: 0 !important;
   font-weight: 400 !important;
@@ -1885,8 +1885,10 @@ ng-multiselect-dropdown {
   vertical-align: middle !important;
   cursor: pointer !important;
   background-image: none !important;
-  border-radius: 4px !important;
-  width: 90%;
+  border-radius: 2px !important;
+  width: 70%;
+  max-width: 90%;
+  
 }
 
 /* Chart.js axis styling */
@@ -2030,3 +2032,23 @@ ng-multiselect-dropdown {
     }
   }
 }
+
+.ng-star-inserted{
+  color: transparent;
+}
+/* Override ng-star-inserted to ensure text visibility */
+.query-builder-container .ng-star-inserted,
+.query-results-container .ng-star-inserted,
+.results-table-container .ng-star-inserted,
+.query-details-section .ng-star-inserted,
+.modal .ng-star-inserted {
+  color: inherit;
+}
+
+/* Stronger override for visualization-section to handle chart text */
+.visualization-section .ng-star-inserted,
+.chartjs-render-monitor .ng-star-inserted {
+  color: #000000 !important;
+  fill: #000000 !important;
+}
+
