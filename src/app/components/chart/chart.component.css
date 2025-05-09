@@ -1,4 +1,3 @@
-
 /* Global Reset for Consistency */
 * {
   margin: 0;
@@ -69,18 +68,8 @@ html {
   align-items: center;
   padding: 1rem;
   background: white;
-  
-  /* border: 1px solid rgba(255, 255, 255, 0.2); */
   border-radius: 0px; 
   margin:0;
-  /* margin-bottom: 0.5rem; */
-  /* box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); */
-  /* animation: fadeIn 0.6s ease-out;
-  transition: transform 0.3s ease; */
-}
-
-.query-builder-container:hover {
-  transform: translateY(0);
 }
 
 /* Title Container */
@@ -96,7 +85,6 @@ html {
   font-size: 2rem;
   color: #1e3a8a;
   transition: transform 0.3s ease, color 0.3s ease;
- 
 }
 
 .query-builder-logo:hover {
@@ -110,7 +98,6 @@ html {
   font-weight: 700;
   color: black;
   letter-spacing: -0.02em;
-  /* transition: color 0.3s ease; */
 }
 
 .query-builder-title:hover {
@@ -129,20 +116,18 @@ html {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem 0.5rem 1rem; /* Adjusted for icon */
+  padding: 0.5rem 1rem 0.5rem 1rem;
   font-size: 1rem;
   font-weight: 500;
   color: #000000;
   background: rgb(175, 174, 174);
-  border:  none;
+  border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
   position: relative;
   overflow: hidden;
   border-color: black;
-  
 }
 
 .btn::before {
@@ -154,16 +139,10 @@ html {
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: 0.5s;
-} 
-
-/* .btn:hover::before {
-  left: 100%;
-} */
+}
 
 .btn:hover {
   background: #e5e7eb;
-  transform:translateY(0);
-  /* box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); */
   border: 1px solid black;
 }
 
@@ -180,7 +159,7 @@ html {
   color: #9ca3af;
   cursor: not-allowed;
   box-shadow: none;
-} 
+}
 
 /* Button Icon */
 .btn-icon {
@@ -188,14 +167,14 @@ html {
   color: #000000;
 }
 
-.btn-icon:hover{
-  transform:translateY(0);
+.btn-icon:hover {
+  transform: translateY(0);
   transform: rotate(0);
   transform: scale(0);
 }
 
-.btn btn-export{
-  transform:translateY(-20px);
+.btn btn-export {
+  transform: translateY(-20px);
 }
 
 /* Specific Button Classes */
@@ -205,22 +184,19 @@ html {
   background: rgb(230, 227, 227);
 }
 
-
-.btn-run{
-  background-color: #7198ec;
+.btn-run {
+  background-color: rgb(61, 141, 239);
   color: black;
   margin-right: 1.8rem;
 }
 
 .btn-run:hover {
   background: #5588f5;
-  transform:translateY(0);
-  /* box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); */
   border: 1px solid black;
 }
 
 .btn-export::before {
-  content: '\f56e'; /* Font Awesome file-export icon */
+  content: '\f56e';
   font-family: 'Font Awesome 6 Free';
   font-weight: 900;
   font-size: 1rem;
@@ -229,17 +205,16 @@ html {
 }
 
 .btn-save::before {
-  content: '\f0c7'; /* Font Awesome floppy-disk icon */
+  content: '\f0c7';
   font-family: 'Font Awesome 6 Free';
   font-weight: 900;
   font-size: 1rem;
   color: #000000;
   margin-right: 0.5rem;
-  
 }
 
 .btn-run::before {
-  content: '\f04b'; /* Font Awesome play icon */
+  content: '\f04b';
   font-family: 'Font Awesome 6 Free';
   font-weight: 900;
   font-size: 1rem;
@@ -318,11 +293,8 @@ html {
   border: 1px solid rgba(209, 213, 219, 0.3);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   animation: fadeIn 0.6s ease-out;
-  
   height: 76px;
-
 }
-
 
 /* Query Results Header */
 .query-results-header {
@@ -330,14 +302,12 @@ html {
   align-items: center;
   gap: 1.5rem;
   flex-wrap: wrap;
-  justify-content:left;
+  justify-content: left;
   background: white;
-  /* padding: 1.5rem; */
   border-radius: 7px;
   box-shadow: 50x 7px 15px rgba(0, 0, 0, 0.08);
   margin-bottom: 1.5rem;
   transition: all 0.3s ease;
-  
 }
 
 .query-results-header:hover {
@@ -352,12 +322,11 @@ html {
   color: #000000;
   letter-spacing: -0.02em;
   transition: color 0.3s ease;
- text-align: left;
+  text-align: left;
 }
 
 .query-results-title:hover {
   color: #000000;
-
 }
 
 /* Query Timestamp */
@@ -381,7 +350,7 @@ html {
 .query-status {
   font-size: 0.875rem;
   font-weight: 600;
-  padding: 0.5rem 1rem 0.5rem 2rem; /* Adjusted padding for icon */
+  padding: 0.5rem 1rem 0.5rem 2rem;
   border-radius: 6px;
   transition: all 0.3s ease;
   position: relative;
@@ -393,7 +362,7 @@ html {
 }
 
 .query-status.success::before {
-  content: '\f00c'; /* Font Awesome check icon */
+  content: '\f00c';
   font-family: 'Font Awesome 6 Free';
   font-weight: 900;
   position: absolute;
@@ -415,7 +384,7 @@ html {
 }
 
 .query-status.error::before {
-  content: '\f00d'; /* Font Awesome times (cross) icon */
+  content: '\f00d';
   font-family: 'Font Awesome 6 Free';
   font-weight: 900;
   position: absolute;
@@ -436,15 +405,15 @@ html {
   font-size: 0.875rem;
   font-weight: 500;
   color: #4b5563;
-  padding: 0.5rem 1rem 0.5rem 2rem; /* Adjusted padding for icon */
+  padding: 0.5rem 1rem 0.5rem 2rem;
   border-radius: 6px;
   transition: all 0.3s ease;
   position: relative;
-  background: #f1b3b3
+  background: #f1b3b3;
 }
 
 .query-info:not(.execution-time)::before {
-  content: '\f0ce'; /* Font Awesome table icon for rows returned */
+  content: '\f0ce';
   font-family: 'Font Awesome 6 Free';
   font-weight: 900;
   position: absolute;
@@ -460,7 +429,7 @@ html {
 }
 
 .query-info.execution-time::before {
-  content: '\f017'; /* Font Awesome clock icon for execution time */
+  content: '\f017';
   font-family: 'Font Awesome 6 Free';
   font-weight: 900;
   position: absolute;
@@ -479,7 +448,6 @@ html {
 .query-info:hover {
   background: #e37c7c;
   transform: translateY(-2px);
-  
 }
 
 /* Visualization Section */
@@ -487,7 +455,6 @@ html {
   padding: 1.5rem;
   background: #ffffff;
   margin: 1rem;
-  
   max-width: 1380px;
   border-radius: 12px;
   border: 1px solid rgba(209, 213, 219, 0.3);
@@ -522,6 +489,7 @@ html {
   justify-content: end;
   flex-wrap: nowrap;
 }
+
 /* Chart Button */
 .chart-btn {
   display: flex;
@@ -613,8 +581,7 @@ html {
   margin-bottom: 2rem;
   flex-wrap: wrap;
   justify-content: center;
-  border:0px solid black
-  
+  border: 0px solid black;
 }
 
 .axis-selection label {
@@ -796,17 +763,13 @@ ng-multiselect-dropdown {
 
 /* Chart Container */
 .chart-container {
-  max-width: 100%;
-  padding: 2rem;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  margin-top: 2rem;
-  transition: all 0.3s ease;
-}
-
-.chart-container:hover {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  max-width: none;
+  min-width: 300px;
+  height: calc(100vh - 200px);
+  margin: 10px 0;
+  padding: 20px 0 0 0;
+  box-sizing: border-box;
+  background-color: transparent;
 }
 
 /* Table Title and Export Container */
@@ -850,22 +813,66 @@ ng-multiselect-dropdown {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
-
-
 /* Results Table Container */
 .results-table-container {
   background: #ffffff;
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  margin: 1.5rem auto;
+  margin: 1rem;
   max-width: 100%;
-  overflow-x: auto;
   transition: all 0.3s ease;
 }
 
 .results-table-container:hover {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* Table Wrapper */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Table Title and Export Container */
+.table-title-and-export {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+/* Export Buttons */
+.export-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Export Button */
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #000000;
+  background: rgb(200, 198, 198);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.export-btn:hover {
+  background: #e5e7eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 /* Results Table Title */
@@ -923,7 +930,7 @@ ng-multiselect-dropdown {
 }
 
 .search-input:focus {
-  border-color: #3b82f6; /* Fixed invalid color 'Bournemouth' */
+  border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
@@ -932,7 +939,7 @@ ng-multiselect-dropdown {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
-  padding-left: 48rem; /* Adjusted from 35rem for proper alignment */
+  padding-left: 46rem;
 }
 
 /* Table Action Button */
@@ -957,8 +964,6 @@ ng-multiselect-dropdown {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
-
-
 
 /* Row Count */
 .row-count {
@@ -988,8 +993,7 @@ ng-multiselect-dropdown {
   padding: 0.75rem;
   text-align: left;
   font-size: 0.875rem;
-  font-weight: 5
-00;
+  font-weight: 500;
   border-bottom: 1px solid #d1d5db;
   transition: all 0.3s ease;
 }
@@ -1043,9 +1047,9 @@ ng-multiselect-dropdown {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-top: 1.5rem;
+  margin-top: 3rem;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 .pagination select {
@@ -1093,50 +1097,142 @@ ng-multiselect-dropdown {
   font-size: 0.875rem;
   color: #4b5563;
   font-weight: 500;
-  
-  
 }
 
+/* Responsive Design for Results Table */
+@media (max-width: 1024px) {
+  .results-table-container {
+    padding: 1rem;
+    margin: 1rem;
+  }
+  .results-table th,
+  .results-table td {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  .results-table-title {
+    font-size: 1.25rem;
+  }
+  .search-input-wrapper {
+    width: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .results-table-title {
+    font-size: 1.25rem;
+  }
+  .results-table th,
+  .results-table td {
+    padding: 0.4rem;
+    font-size: 0.75rem;
+  }
+  .search-input-wrapper {
+    width: 140px;
+  }
+  .table-actions {
+    padding-left: 0;
+    justify-content: flex-start;
+  }
+  .pagination {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .row-count {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .results-table-title {
+    font-size: 1rem;
+  }
+  .results-table th,
+  .results-table td {
+    padding: 0.3rem;
+    font-size: 0.75rem;
+  }
+  .search-input-wrapper {
+    width: 120px;
+  }
+  .table-action-btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  .row-count {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+  .pagination select {
+    padding: 0.4rem;
+    font-size: 0.75rem;
+  }
+  .pagination-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+}
 /* Query Details Section */
 .query-details-section {
-  margin-top: 2.5rem;
-  padding: 2rem;
-  background: linear-gradient(145deg, rgba(240, 245, 255, 0.95), rgba(224, 231, 255, 0.9));
+  margin: 1.5rem;
+  padding: 1.5rem;
+  background: #ffffff;
   border-radius: 12px;
+  border: 1px solid rgba(209, 213, 219, 0.3);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  max-width: 1400px;
 }
 
 /* Query Details Title */
 .query-details-title {
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #1e3a8a;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  white-space: nowrap;
+}
+
+/* Query Details Grid (Horizontal Row) */
+.query-details-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   margin-bottom: 1.5rem;
 }
 
 /* Query Details Panel */
 .query-details-panel {
-  margin-bottom: 1rem;
+  flex: 1;
+  min-width: 200px;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
-  overflow: hidden;
+  border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
 }
 
 /* Query Details Panel Header */
 .query-details-panel-header {
-  padding: 1rem;
-  background: #f0f5ff;
+  padding: 1.25rem;
+  background: #dbeafe;
   font-size: 0.875rem;
   font-weight: 600;
   color: #1e3a8a;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .query-details-panel-header:hover {
-  background: #e0e7ff;
+  background: #bfdbfe;
+}
+
+.query-details-panel-header i {
+  font-size: 0.875rem;
+  color: #1e3a8a;
 }
 
 /* Query Details Panel Content */
@@ -1145,15 +1241,58 @@ ng-multiselect-dropdown {
   font-size: 0.875rem;
   color: #374151;
   background: #ffffff;
+  position: relative; /* For positioning scroll indicator */
 }
 
-.query-details-panel-content pre {
+/* SQL Panel Scrollbar Hiding */
+.query-details-panel.sql .query-details-panel-content pre {
   background: #f9fafb;
-  padding: 1rem;
+  padding: 1.25rem;
   border-radius: 8px;
   font-size: 0.875rem;
   color: #1e3a8a;
   overflow-x: auto;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', monospace;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Selected Columns Panel Scrollbar Hiding and Height Limit */
+.query-details-panel.columns .query-details-panel-content {
+  max-height: 8rem; /* Approx height for 5 columns: 5 * (1rem line-height + 0.5rem margin) + padding */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Scroll Indicator (Down Arrow) */
+.query-details-panel.columns .scroll-indicator {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem; /* Position at rightmost edge */
+  transform: none; /* Remove centering transform */
+  font-size: 1rem;
+  color: white;
+}
+
+/* General Panel Content Styles */
+.query-details-panel-content pre {
+  background: #f9fafb;
+  padding: 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #1e3a8a;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 .query-details-panel-content p {
@@ -1161,15 +1300,32 @@ ng-multiselect-dropdown {
 }
 
 .query-details-panel-content ul {
-  list-style: disc;
-  padding-left: 1.5rem;
+  list-style: none;
+  padding-left: 0;
 }
 
 .query-details-panel-content li {
   margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.query-details-panel-content li i {
+  font-size: 0.875rem;
+  color: #3b82f6;
 }
 
 /* Query Action Buttons */
+.query-action-buttons {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  justify-content: right;
+}
+
+/* Query Action Button */
 .query-action-btn {
   padding: 0.75rem 1.5rem;
   font-size: 0.875rem;
@@ -1177,17 +1333,71 @@ ng-multiselect-dropdown {
   color: #ffffff;
   background: #3b82f6;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-right: 0.5rem;
 }
 
 .query-action-btn:hover {
   background: #2563eb;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive Design for Query Details */
+@media (max-width: 1024px) {
+  .query-details-section {
+    margin: 1rem;
+    padding: 1rem;
+  }
+  .query-details-grid {
+    flex-wrap: wrap;
+    overflow-x: auto;
+  }
+  .query-details-panel {
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .query-details-title {
+    font-size: 1.5rem;
+  }
+  .query-details-grid {
+    flex-direction: column;
+    overflow-x: initial;
+  }
+  .query-details-panel.columns .query-details-panel-content {
+    max-height: 10rem; /* Slightly taller for vertical stacking */
+  }
+}
+
+@media (max-width: 480px) {
+  .query-details-title {
+    font-size: 1.25rem;
+  }
+  .query-details-panel-header {
+    font-size: 0.75rem;
+    padding: 0.75rem;
+  }
+  .query-details-panel-content {
+    font-size: 0.75rem;
+    padding: 0.75rem;
+  }
+  .query-details-panel.sql .query-details-panel-content pre {
+    padding: 0.75rem;
+    font-size: 0.75rem;
+  }
+  .query-details-panel.columns .query-details-panel-content {
+    max-height: 6rem; /* Adjusted for smaller screens */
+  }
+  .query-details-panel.columns .scroll-indicator {
+    font-size: 0.875rem;
+    bottom: 0.25rem;
+    right: 0.25rem; /* Adjusted for smaller screens */
+  }
+  .query-action-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
 }
 
 /* Modal Styles */
@@ -1226,7 +1436,7 @@ ng-multiselect-dropdown {
 
 /* Columns Modal Specific Styles */
 .columns-modal .modal-content {
-  max-width: 400px; /* Smaller width for columns modal */
+  max-width: 400px;
 }
 
 .columns-modal .columns-dropdown-wrapper {
@@ -1234,12 +1444,13 @@ ng-multiselect-dropdown {
 }
 
 .columns-modal ng-multiselect-dropdown {
-  width: 100%; /* Full width for dropdown */
+  width: 100%;
+
 }
 
 .columns-modal .multiselect-dropdown .dropdown-btn {
-  background: #ffffff; /* White background for cleaner look */
-  border: 1px solid #d1d5db; /* Lighter border */
+  background: #ffffff;
+  border: 1px solid #d1d5db;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   padding: 0.75rem;
   font-size: 0.875rem;
@@ -1253,11 +1464,11 @@ ng-multiselect-dropdown {
 }
 
 .columns-modal .multiselect-dropdown .dropdown-list {
-  width: 100%; /* Full width dropdown list */
-  border: 1px solid #d1d5db; /* Lighter border */
+  width: 100%;
+  border: 1px solid #d1d5db;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   background: #ffffff;
-  max-height: 250px; /* Slightly taller for more columns */
+  max-height: 250px;
 }
 
 .columns-modal .multiselect-dropdown .dropdown-list .multiselect-item-checkbox {
@@ -1268,7 +1479,7 @@ ng-multiselect-dropdown {
 }
 
 .columns-modal .multiselect-dropdown .dropdown-list .multiselect-item-checkbox input[type="checkbox"] {
-  margin: 0; /* Remove default margin */
+  margin: 0;
 }
 
 .columns-modal .multiselect-dropdown .dropdown-list .multiselect-item-checkbox div {
@@ -1278,7 +1489,7 @@ ng-multiselect-dropdown {
 }
 
 .columns-modal .multiselect-dropdown .dropdown-list .multiselect-item-checkbox:hover {
-  background: #e0e7ff; /* Light blue hover */
+  background: #e0e7ff;
   color: #1e3a8a;
 }
 
@@ -1433,52 +1644,52 @@ ng-multiselect-dropdown {
 /* Styling for selected items in ng-multiselect-dropdown */
 ::ng-deep .multiselect-dropdown .selected-item-container,
 ::ng-deep .multiselect-dropdown .selected-item {
-  background: transparent !important; /* Ensure transparent background */
-  color: #1e3a8a !important; /* Dark blue for text visibility, matching theme */
-  border: none !important; /* Explicitly remove border */
-  padding: 0.25rem 0.5rem; /* Add padding for spacing */
-  margin: 0.2rem; /* Space between selected items */
-  display: inline-flex; /* Ensure content aligns properly */
-  align-items: center; /* Vertically center content */
-  font-size: 0.875rem; /* Consistent font size */
-  line-height: 1.2; /* Improve text readability */
+  background: transparent !important;
+  color: #1e3a8a !important;
+  border: none !important;
+  padding: 0.25rem 0.5rem;
+  margin: 0.2rem;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;
+  line-height: 1.2;
 }
 
 /* Styling for the close ('x') icon */
 ::ng-deep .multiselect-dropdown .selected-item a {
-  color: #dc2626 !important; /* Red color for the 'x' */
-  padding-left: 4px; /* Space from text */
-  font-size: 0.875rem; /* Match text size */
-  text-decoration: none !important; /* Remove any underline */
-  line-height: 1; /* Align with text */
-  transition: all 0.3s ease; /* Smooth transition for hover and animation */
-  animation: fadeInX 0.3s ease-out; /* Entrance animation for the 'x' */
+  color: #dc2626 !important;
+  padding-left: 4px;
+  font-size: 0.875rem;
+  text-decoration: none !important;
+  line-height: 1;
+  transition: all 0.3s ease;
+  animation: fadeInX 0.3s ease-out;
 }
 
 /* Hover effect for selected items */
 ::ng-deep .multiselect-dropdown .selected-item:hover,
 ::ng-deep .multiselect-dropdown .selected-item-container:hover {
-  color: #2563eb !important; /* Lighter blue on hover, matching theme */
+  color: #2563eb !important;
 }
 
 /* Hover effect for close icon */
 ::ng-deep .multiselect-dropdown .selected-item a:hover {
-  color: #b91c1c !important; /* Darker red on hover */
-  transform: scale(1.2) rotate(90deg); /* Scale and rotate for hover effect */
+  color: #b91c1c !important;
+  transform: scale(1.2) rotate(90deg);
 }
 
 /* Ensure dropdown button container doesn’t interfere */
 ::ng-deep .multiselect-dropdown .dropdown-btn {
-  background: #f5f5f5 !important; /* Retain existing background */
-  border: 1px solid #333333 !important; /* Retain existing border */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); /* Retain shadow */
+  background: #f5f5f5 !important;
+  border: 1px solid #333333 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 /* Prevent unwanted borders or outlines from parent */
 ::ng-deep .multiselect-dropdown .dropdown-btn .selected-item-container,
 ::ng-deep .multiselect-dropdown .dropdown-btn .selected-item {
-  border: none !important; /* Explicitly remove any inherited border */
-  outline: none !important; /* Remove any outline */
+  border: none !important;
+  outline: none !important;
 }
 
 /* Animation for the 'x' entrance */
@@ -1552,11 +1763,25 @@ ng-multiselect-dropdown {
   }
 
   .columns-modal .modal-content {
-    max-width: 350px; /* Adjusted for smaller screens */
+    max-width: 350px;
   }
 
   .columns-modal ng-multiselect-dropdown {
     max-width: 100%;
+  }
+
+  .query-details-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .query-details-panel.sql,
+  .query-details-panel.dataSource,
+  .query-details-panel.parameters,
+  .query-details-panel.columns,
+  .query-details-panel.filters {
+    grid-column: 1 / 2;
+    grid-row: auto;
   }
 }
 
@@ -1574,7 +1799,7 @@ ng-multiselect-dropdown {
   }
 
   .btn, .btn-auto, .chart-btn, .export-btn, .pagination-btn, .query-action-btn {
-    padding: 0.5rem 1rem 0.5rem 2rem; /* Adjusted for icon */
+    padding: 0.5rem 1rem 0.5rem 2rem;
     font-size: 0.75rem;
   }
 
@@ -1670,13 +1895,19 @@ ng-multiselect-dropdown {
 
   ::ng-deep .multiselect-dropdown .selected-item-container,
   ::ng-deep .multiselect-dropdown .selected-item {
-    padding: 0.2rem 0.4rem; /* Smaller padding for mobile */
-    font-size: 0.75rem; /* Smaller text */
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
   }
 
   ::ng-deep .multiselect-dropdown .selected-item a {
-    font-size: 0.75rem; /* Smaller close icon */
+    font-size: 0.75rem;
     padding-left: 3px;
+  }
+
+  .chart-container {
+    height: calc(100vh - 250px);
+    min-width: 200px;
+    padding: 15px 0 0 0;
   }
 }
 
@@ -1694,7 +1925,7 @@ ng-multiselect-dropdown {
   }
 
   .btn, .btn-auto, .chart-btn, .export-btn, .pagination-btn, .query-action-btn {
-    padding: 0.4rem 0.8rem 0.4rem 2rem; /* Adjusted for icon */
+    padding: 0.4rem 0.8rem 0.4rem 2rem;
     font-size: 0.75rem;
   }
 
@@ -1729,7 +1960,7 @@ ng-multiselect-dropdown {
 
   .query-timestamp, .query-status, .query-info {
     font-size: 0.75rem;
-    padding: 0.4rem 0.8rem 0.4rem 2rem; /* Adjusted for icon */
+    padding: 0.4rem 0.8rem 0.4rem 2rem;
   }
 
   .query-info:not(.execution-time)::before,
@@ -1798,7 +2029,7 @@ ng-multiselect-dropdown {
 
   ::ng-deep .multiselect-dropdown .selected-item-container,
   ::ng-deep .multiselect-dropdown .selected-item {
-    padding: 0.15rem 0.3rem; /* Even smaller padding */
+    padding: 0.15rem 0.3rem;
     font-size: 0.75rem;
   }
 
@@ -1806,30 +2037,9 @@ ng-multiselect-dropdown {
     font-size: 0.75rem;
     padding-left: 2px;
   }
-}
-/* Styles for the chart container to use full page space */
-.chart-container {
-  max-width: none; /* Remove width restriction */
-  min-width: 300px; /* Ensure minimum width for chart rendering */
-  height: calc(100vh - 200px); /* Full height minus space for header, dropdowns, etc. */
-  margin: 10px 0; /* Minimal vertical margin */
-  padding: 20px 0 0 0; /* Add top padding to shift chart down */
-  box-sizing: border-box;
-  background-color: transparent;
-}
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
   .chart-container {
-    height: calc(100vh - 250px); /* Adjust for smaller screens */
-    min-width: 200px;
-    padding: 15px 0 0 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .chart-container {
-    height: calc(100vh - 300px); /* Further adjust for mobile */
+    height: calc(100vh - 300px);
     min-width: 150px;
     padding: 10px 0 0 0;
   }
@@ -1841,7 +2051,7 @@ ng-multiselect-dropdown {
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  margin-bottom: 30px; /* Increased for more separation from chart */
+  margin-bottom: 30px;
 }
 
 /* Styles for axis-selection labels */
@@ -1888,7 +2098,6 @@ ng-multiselect-dropdown {
   border-radius: 2px !important;
   width: 70%;
   max-width: 90%;
-  
 }
 
 /* Chart.js axis styling */
@@ -1910,7 +2119,7 @@ ng-multiselect-dropdown {
     font-weight: 400 !important;
     fill: #000000 !important;
     cursor: pointer;
-    padding-left: 5px; /* Add padding to shift labels away from axis */
+    padding-left: 5px;
   }
 
   /* X-axis ticks */
@@ -1985,7 +2194,7 @@ ng-multiselect-dropdown {
     .chartjs-x-axis-labels text,
     .chartjs-y-axis-labels text {
       font-size: 12px !important;
-      padding-left: 3px; /* Adjusted for smaller screens */
+      padding-left: 3px;
     }
     .chartjs-x-axis-ticks line,
     .chartjs-y-axis-ticks line {
@@ -2020,7 +2229,7 @@ ng-multiselect-dropdown {
     .chartjs-x-axis-labels text,
     .chartjs-y-axis-labels text {
       font-size: 10px !important;
-      padding-left: 2px; /* Adjusted for mobile */
+      padding-left: 2px;
     }
     .chartjs-x-axis-ticks line,
     .chartjs-y-axis-ticks line {
@@ -2033,9 +2242,10 @@ ng-multiselect-dropdown {
   }
 }
 
-.ng-star-inserted{
+.ng-star-inserted {
   color: transparent;
 }
+
 /* Override ng-star-inserted to ensure text visibility */
 .query-builder-container .ng-star-inserted,
 .query-results-container .ng-star-inserted,
@@ -2051,4 +2261,14 @@ ng-multiselect-dropdown {
   color: #000000 !important;
   fill: #000000 !important;
 }
+
+
+
+
+
+
+
+
+
+
 

@@ -13,18 +13,19 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-interface Panels {
-  sql: boolean;
-  dataSource: boolean;
-  parameters: boolean;
-  columns: boolean;
-  filters: boolean;
-}
-
 interface DropdownItem {
   item_id: number;
   item_text: string;
   isSelected: boolean;
+}
+
+interface SqlFilter {
+  column: string;
+  operation: string;
+  values: string[];
+  valueStart?: number;
+  valueEnd?: number;
+  condition: string;
 }
 
 @Component({
@@ -66,7 +67,7 @@ export class ChartComponent implements OnInit {
   chartTypes: ChartType[] = ['bar', 'line', 'pie'];
   chartData: ChartConfiguration['data'] = { labels: [], datasets: [] };
   chartOptions: ChartConfiguration['options'] = {
-    aspectRatio: 1.0, // Adjusted to make chart taller
+    aspectRatio: 1.0,
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -117,7 +118,7 @@ export class ChartComponent implements OnInit {
           font: { size: 12 },
           stepSize: 10,
         },
-        max: 50, // Default max
+        max: 50,
       },
       x: {
         display: true,
@@ -161,6 +162,7 @@ export class ChartComponent implements OnInit {
   showSortModal = false;
   filters: Filter[] = [];
   sortColumns: SortColumn[] = [];
+  sqlQueryFilters: SqlFilter[] = [];
 
   sortByDisplay: string = 'None';
   filtersDisplay: string = 'None';
@@ -195,13 +197,11 @@ export class ChartComponent implements OnInit {
   tableName: string = '';
 
   sqlQuery = '';
-  panels: Panels = { sql: false, dataSource: false, parameters: false, columns: false, filters: false };
   queryRequestBody: QueryRequestBody | null = null;
   isLoading = false;
   showMenuIndex: number | null = null;
 
-  // New properties for chart data limit
-  chartDataLimit: number | 'all' = 10; // Default to first 10 data points
+  chartDataLimit: number | 'all' = 10;
   chartDataLimitOptions: (number | 'all')[] = [10, 50, 100, 'all'];
 
   constructor(private apiService: ApiService, private queryService: QueryService) {}
@@ -240,6 +240,7 @@ export class ChartComponent implements OnInit {
     this.apiService.GenerateSqlQuery(this.queryRequestBody).subscribe({
       next: (sql) => {
         this.sqlQuery = sql;
+        this.parseSqlFilters();
         this.apiService.executeSqlQuery({ sqlQuery: sql }).subscribe({
           next: (data) => {
             this.queryData = data;
@@ -278,6 +279,64 @@ export class ChartComponent implements OnInit {
       },
       error: (err) => this.handleQueryFailure(err, startTime),
     });
+  }
+
+  private parseSqlFilters() {
+    this.sqlQueryFilters = [];
+    if (!this.sqlQuery) return;
+
+    const whereMatch = this.sqlQuery.match(/WHERE\s+(.+?)(?:\s*(?:GROUP\s+BY|ORDER\s+BY|LIMIT|$))/i);
+    if (!whereMatch) return;
+
+    const conditions = whereMatch[1].split(/\s+(AND|OR)\s+/i).filter((_, i) => i % 2 === 0);
+    const logicalOperators = whereMatch[1].match(/\s+(AND|OR)\s+/ig)?.map(op => op.trim().toLowerCase()) || [];
+
+    conditions.forEach((condition, index) => {
+      if (condition.includes('BETWEEN')) {
+        const match = condition.match(/(\w+)\s+BETWEEN\s+(\d+)\s+AND\s+(\d+)/i);
+        if (match) {
+          this.sqlQueryFilters.push({
+            column: match[1],
+            operation: 'range',
+            valueStart: parseFloat(match[2]),
+            valueEnd: parseFloat(match[3]),
+            condition: logicalOperators[index - 1] || 'and',
+            values: [],
+          });
+        }
+      } else if (condition.includes(' IN ')) {
+        const match = condition.match(/(\w+)\s+IN\s+\((.+?)\)/i);
+        if (match) {
+          const values = match[2].split(',').map(v => v.trim().replace(/['"]/g, ''));
+          this.sqlQueryFilters.push({
+            column: match[1],
+            operation: 'in',
+            values,
+            condition: logicalOperators[index - 1] || 'and',
+          });
+        }
+      } else {
+        const match = condition.match(/(\w+)\s*(=|>|<|>=|<=|!=)\s*['"]?([^'"]+)['"]?/i);
+        if (match) {
+          const operationMap: { [key: string]: string } = {
+            '=': 'equals',
+            '>': 'greater than',
+            '<': 'less than',
+            '>=': 'greater than or equal',
+            '<=': 'less than or equal',
+            '!=': 'not equals',
+          };
+          this.sqlQueryFilters.push({
+            column: match[1],
+            operation: operationMap[match[2]] || match[2],
+            values: [match[3]],
+            condition: logicalOperators[index - 1] || 'and',
+          });
+        }
+      }
+    });
+
+    this.updateDisplayStrings();
   }
 
   private initializeFilterColumns() {
@@ -334,7 +393,6 @@ export class ChartComponent implements OnInit {
       return;
     }
 
-    // Limit data based on chartDataLimit
     const limit = this.chartDataLimit === 'all' ? this.queryData.length : this.chartDataLimit;
     const limitedData = this.queryData.slice(0, limit);
 
@@ -350,8 +408,7 @@ export class ChartComponent implements OnInit {
 
     const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
-    // Calculate dynamic max for y-axis
-    let maxYValue = 50; // Default max
+    let maxYValue = 50;
     if (limitedData.length && this.yAxisColumns.length) {
       const maxValues = this.yAxisColumns.map(yCol => {
         const values = limitedData.map(row => {
@@ -361,7 +418,7 @@ export class ChartComponent implements OnInit {
         return Math.max(...values);
       });
       const dataMax = Math.max(...maxValues);
-      maxYValue = Math.max(50, Math.ceil(dataMax / 10) * 10); // Round up to nearest multiple of 10
+      maxYValue = Math.max(50, Math.ceil(dataMax / 10) * 10);
     }
 
     if (this.selectedChart === 'pie') {
@@ -412,10 +469,9 @@ export class ChartComponent implements OnInit {
       };
     }
 
-    // Update chart options based on chart type
     this.chartOptions = {
       ...this.chartOptions,
-      aspectRatio: 1.0, // Adjusted to make chart taller
+      aspectRatio: 1.0,
       scales: {
         y: {
           beginAtZero: true,
@@ -443,7 +499,6 @@ export class ChartComponent implements OnInit {
     };
   }
 
-  // New method to handle chart data limit changes
   onChartDataLimitChange() {
     this.updateChartData();
   }
@@ -493,6 +548,7 @@ export class ChartComponent implements OnInit {
       xAxisColumns: this.xAxisColumns,
       yAxisColumns: this.yAxisColumns,
       timestamp: this.queryStatus.timestamp,
+      sqlQueryFilters: this.sqlQueryFilters,
     };
     const dataStr = JSON.stringify(exportData, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
@@ -670,7 +726,9 @@ export class ChartComponent implements OnInit {
     this.sortByDisplay = this.sortColumns.length
       ? this.sortColumns.map(s => `${s.column} (${s.order})`).join(', ')
       : 'None';
-    this.filtersDisplay = this.filters.length
+    this.filtersDisplay = this.sqlQueryFilters.length
+      ? this.sqlQueryFilters.map(f => `${f.column} ${f.operation} ${f.values.join(', ') || (f.valueStart + ' - ' + f.valueEnd)}`).join(', ')
+      : this.filters.length
       ? this.filters.map(f => `${f.column} ${f.operation}`).join(', ')
       : 'None';
   }
@@ -854,10 +912,6 @@ export class ChartComponent implements OnInit {
       console.error('PDF Export Error:', error);
       alert('Failed to export PDF: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
-  }
-
-  togglePanel(panel: keyof Panels) {
-    this.panels[panel] = !this.panels[panel];
   }
 
   viewRow(row: any) {

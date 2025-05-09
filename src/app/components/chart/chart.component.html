@@ -1,3 +1,4 @@
+<!-- Query Builder Container -->
 <div class="query-builder-container">
   <div class="title-container">
     <i class="fas fa-database query-builder-logo" aria-hidden="true"></i>
@@ -16,6 +17,7 @@
   </div>
 </div>
 
+<!-- Query Results Container -->
 <div class="query-results-container">
   <div class="query-results-header">
     <span class="query-results-title">Customer Data Query Results</span>
@@ -35,7 +37,6 @@
 <div class="visualization-section">
   <div class="header-and-chart-selection">
     <h3 class="visualization-title">Query Visualization</h3>
-
     <div class="chart-selection">
       <button (click)="selectChart('bar')"
               [ngClass]="{'chart-selected': selectedChart === 'bar'}"
@@ -160,48 +161,54 @@
       </div>
     </div>
   </div>
-  <table class="results-table" role="grid">
-    <thead>
-      <tr>
-        <th *ngFor="let column of selectedColumns"
-            (click)="sortTable(column)"
-            [ngClass]="{
-              'asc': sortColumn === column && sortDirection === 'asc',
-              'desc': sortColumn === column && sortDirection === 'desc'
-            }"
-            scope="col"
-            role="columnheader"
-            [attr.aria-sort]="sortColumn === column ? sortDirection : 'none'">
-          {{ column }}
-        </th>
-        <th scope="col" class="actions-header">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let row of paginatedData; let i = index"
-          @rowFadeIn
-          (click)="onRowClick(row)"
-          role="row">
-        <td *ngFor="let column of selectedColumns" role="cell">{{ row[column] }}</td>
-        <td role="cell">
-          <div class="three-dot-menu">
-            <button class="three-dot-btn"
-                    (click)="toggleMenu(i)"
-                    aria-label="Row actions menu"
-                    [attr.aria-expanded]="showMenuIndex === i">
-              <span class="btn-icon">⋮</span>
-            </button>
-            <div class="three-dot-menu-content"
-                 [ngClass]="{'show': showMenuIndex === i}"
-                 role="menu">
-              <button (click)="viewRow(row)" role="menuitem">View</button>
-              <button (click)="editRow(row)" role="menuitem">Edit</button>
+  <div class="table-wrapper">
+    <table class="results-table" role="grid">
+      <thead>
+        <tr>
+          <th *ngFor="let column of selectedColumns"
+              (click)="sortTable(column)"
+              [ngClass]="{
+                'asc': sortColumn === column && sortDirection === 'asc',
+                'desc': sortColumn === column && sortDirection === 'desc'
+              }"
+              scope="col"
+              role="columnheader"
+              [attr.aria-sort]="sortColumn === column ? sortDirection : 'none'">
+            {{ column }}
+          </th>
+          <th scope="col" class="actions-header">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of paginatedData; let i = index"
+            @rowFadeIn
+            (click)="onRowClick(row)"
+            role="row">
+          <td *ngFor="let column of selectedColumns" role="cell">{{ row[column] }}</td>
+          <td role="cell">
+            <div class="three-dot-menu">
+              <button class="three-dot-btn"
+                      (click)="toggleMenu(i)"
+                      aria-label="Row actions menu"
+                      [attr.aria-expanded]="showMenuIndex === i">
+                <span class="btn-icon">⋮</span>
+              </button>
+              <div class="three-dot-menu-content"
+                   [ngClass]="{'show': showMenuIndex === i}"
+                   role="menu">
+                <button (click)="viewRow(row)" role="menuitem">
+                  <i class="fas fa-eye btn-icon" aria-hidden="true"></i> View
+                </button>
+                <button (click)="editRow(row)" role="menuitem">
+                  <i class="fas fa-edit btn-icon" aria-hidden="true"></i> Edit
+                </button>
+              </div>
             </div>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
   <div class="pagination">
     <select [(ngModel)]="rowsPerPage"
             (change)="onRowsPerPageChange()"
@@ -310,58 +317,74 @@
 </div>
 
 <!-- Query Details Section -->
+<!-- Query Details Section -->
 <div class="query-details-section">
   <h3 class="query-details-title">Query Details</h3>
-  <div class="query-details-panel">
-    <div class="query-details-panel-header" (click)="togglePanel('sql')" role="button" tabindex="0" [attr.aria-expanded]="panels.sql">
-      View SQL
+  <div class="query-details-grid">
+    <div class="query-details-panel sql">
+      <div class="query-details-panel-header">
+        SQL Query
+        <i class="fas fa-code" aria-hidden="true"></i>
+      </div>
+      <div class="query-details-panel-content">
+        <pre>{{ sqlQuery || 'No SQL query available' }}</pre>
+      </div>
     </div>
-    <div class="query-details-panel-content" *ngIf="panels.sql">
-      <pre>{{ sqlQuery }}</pre>
+    <div class="query-details-panel dataSource">
+      <div class="query-details-panel-header">
+        Data Source
+        <i class="fas fa-database" aria-hidden="true"></i>
+      </div>
+      <div class="query-details-panel-content">
+        <p><strong>Source:</strong> {{ tableName || 'Customer Data' }}</p>
+        <p><strong>Type:</strong> PostgreSQL Database</p>
+        <p><strong>Last Updated:</strong> {{ queryStatus.timestamp || 'April 16, 2025' }}</p>
+      </div>
     </div>
-  </div>
-  <div class="query-details-panel">
-    <div class="query-details-panel-header" (click)="togglePanel('dataSource')" role="button" tabindex="0" [attr.aria-expanded]="panels.dataSource">
-      Data Source
+    <div class="query-details-panel parameters">
+      <div class="query-details-panel-header">
+        Query Parameters
+        <i class="fas fa-cogs" aria-hidden="true"></i>
+      </div>
+      <div class="query-details-panel-content">
+        <p><strong>Sort By:</strong> {{ sortByDisplay }}</p>
+        <p><strong>Limit:</strong> {{ queryData.length || 'No limit' }} rows</p>
+        <p><strong>Filters:</strong> {{ filtersDisplay }}</p>
+      </div>
     </div>
-    <div class="query-details-panel-content" *ngIf="panels.dataSource">
-      <p><strong>Source:</strong> {{ tableName || 'Customer Data' }}</p>
-      <p><strong>Type:</strong> PostgreSQL Database</p>
-      <p><strong>Last Updated:</strong> {{ queryStatus.timestamp || 'April 16, 2025' }}</p>
+    <div class="query-details-panel columns">
+      <div class="query-details-panel-header">
+        Selected Columns
+        <i class="fas fa-columns" aria-hidden="true"></i>
+      </div>
+      <div class="query-details-panel-content">
+        <ul>
+          <li *ngFor="let col of selectedColumns">{{ col }}</li>
+          <li *ngIf="!selectedColumns.length">No columns selected</li>
+        </ul>
+        <i *ngIf="selectedColumns.length > 5" class="fas fa-chevron-down scroll-indicator" aria-hidden="true"></i>
+      </div>
     </div>
-  </div>
-  <div class="query-details-panel">
-    <div class="query-details-panel-header" (click)="togglePanel('parameters')" role="button" tabindex="0" [attr.aria-expanded]="panels.parameters">
-      Query Parameters
-    </div>
-    <div class="query-details-panel-content" *ngIf="panels.parameters">
-      <p><strong>Sort By:</strong> {{ sortByDisplay }}</p>
-      <p><strong>Limit:</strong> {{ queryData.length || 'No limit' }} rows</p>
-      <p><strong>Filters:</strong> {{ filtersDisplay }}</p>
-    </div>
-  </div>
-  <div class="query-details-panel">
-    <div class="query-details-panel-header" (click)="togglePanel('columns')" role="button" tabindex="0" [attr.aria-expanded]="panels.columns">
-      Selected Columns
-    </div>
-    <div class="query-details-panel-content" *ngIf="panels.columns GY">
-      <ul>
-        <li *ngFor="let col of selectedColumns">{{ col }}</li>
-      </ul>
-    </div>
-  </div>
-  <div class="query-details-panel">
-    <div class="query-details-panel-header" (click)="togglePanel('filters')" role="button" tabindex="0" [attr.aria-expanded]="panels.filters">
-      Applied Filters
-    </div>
-    <div class="query-details-panel-content" *ngIf="panels.filters">
-      <p *ngIf="!filters.length">No filters have been applied to this query</p>
-      <ul *ngIf="filters.length">
-        <li *ngFor="let filter of filters">
-          {{ filter.column }} {{ filter.operation }} {{ filter.values.join(', ') }}
-          <span *ngIf="filter.operation === 'range'">{{ filter.valueStart }} - {{ filter.valueEnd }}</span>
-        </li>
-      </ul>
+    <div class="query-details-panel filters">
+      <div class="query-details-panel-header">
+        Applied Filters
+        <i class="fas fa-filter" aria-hidden="true"></i>
+      </div>
+      <div class="query-details-panel-content">
+        <p *ngIf="!sqlQueryFilters?.length && !filters.length">No filters have been applied to this query</p>
+        <ul *ngIf="sqlQueryFilters?.length">
+          <li *ngFor="let filter of sqlQueryFilters">
+            {{ filter.column }} {{ filter.operation }} {{ filter.values.join(', ') }}
+            <span *ngIf="filter.operation === 'range'">{{ filter.valueStart }} - {{ filter.valueEnd }}</span>
+          </li>
+        </ul>
+        <ul *ngIf="!sqlQueryFilters?.length && filters.length">
+          <li *ngFor="let filter of filters">
+            {{ filter.column }} {{ filter.operation }} {{ filter.values.join(', ') }}
+            <span *ngIf="filter.operation === 'range'">{{ filter.valueStart }} - {{ filter.valueEnd }}</span>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
   <div class="query-action-buttons">
