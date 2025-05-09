@@ -1,4 +1,3 @@
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
@@ -6,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { NgChartsModule } from 'ng2-charts';
 import { NgMultiSelectDropDownModule, IDropdownSettings } from 'ng-multiselect-dropdown';
 import { ChartConfiguration, ChartType } from 'chart.js';
-import { ApiService, ApiQuery, ApiChart, Filter, SortColumn, FilterColumn } from '../../Services/api.service';
+import { ApiService, ApiQuery, ApiChart, SortColumn, Filter } from '../../Services/api.service';
 import { QueryService } from '../../Services/query.service';
 import { QueryRequestBody } from '../dashboard/dashboard.component';
 import { trigger, style, animate, transition } from '@angular/animations';
@@ -14,19 +13,21 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-interface DropdownItem {
+interface TableColumn {
+  name: string;
+}
+
+interface ColumnDropdownItem {
   item_id: number;
   item_text: string;
   isSelected: boolean;
 }
 
-interface SqlFilter {
+interface TableFilter {
   column: string;
-  operation: string;
-  values: string[];
-  valueStart?: number;
-  valueEnd?: number;
-  condition: string;
+  operation: 'equals' | 'contains' | 'greater than' | 'less than';
+  value: string;
+  availableOperations: string[];
 }
 
 @Component({
@@ -149,23 +150,20 @@ export class ChartComponent implements OnInit {
     },
   };
 
-  xAxis: DropdownItem[] = [];
-  yAxis: DropdownItem[] = [];
+  xAxis: ColumnDropdownItem[] = [];
+  yAxis: ColumnDropdownItem[] = [];
   xAxisColumns: string[] = [];
   yAxisColumns: string[] = [];
-  availableColumns: string[] = [];
-  selectedColumns: string[] = [];
-  columns: DropdownItem[] = [];
-  selectedColumnsItems: DropdownItem[] = [];
-  filterColumns: FilterColumn[] = [];
+  availableColumns: TableColumn[] = [];
+  selectedColumns: TableColumn[] = [];
+  columns: ColumnDropdownItem[] = [];
+  selectedColumnsItems: ColumnDropdownItem[] = [];
 
   showColumnsModal = false;
-  showFilterModal = false;
   showSortModal = false;
-  filters: Filter[] = [];
+  showFilterModal = false; // Added for filter modal
   sortColumns: SortColumn[] = [];
-  sqlQueryFilters: SqlFilter[] = [];
-
+  filters: TableFilter[] = [];
   sortByDisplay: string = 'None';
   filtersDisplay: string = 'None';
 
@@ -242,7 +240,6 @@ export class ChartComponent implements OnInit {
     this.apiService.GenerateSqlQuery(this.queryRequestBody).subscribe({
       next: (sql) => {
         this.sqlQuery = sql;
-        this.parseSqlFilters();
         this.apiService.executeSqlQuery({ sqlQuery: sql }).subscribe({
           next: (data) => {
             this.queryData = data;
@@ -261,17 +258,17 @@ export class ChartComponent implements OnInit {
               executionTime: Number(((performance.now() - startTime) / 1000).toFixed(2)),
               rowsReturned: data.length,
             };
-            this.availableColumns = data.length ? Object.keys(data[0]) : [];
+            this.availableColumns = data.length ? Object.keys(data[0]).map(name => ({ name })) : [];
             this.columns = this.availableColumns
-              .sort((a, b) => a.localeCompare(b))
-              .map((col, index) => ({ item_id: index, item_text: col, isSelected: true }));
-            this.selectedColumns = this.availableColumns;
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((col, index) => ({ item_id: index, item_text: col.name, isSelected: true }));
+            this.selectedColumns = this.availableColumns.slice();
             this.selectedColumnsItems = this.columns.slice();
             this.xAxis = this.columns.slice(0, 1).map(item => ({ ...item, isSelected: true }));
             this.yAxis = this.columns.slice(1, 2).map(item => ({ ...item, isSelected: true }));
             this.xAxisColumns = this.xAxis.map(item => item.item_text);
             this.yAxisColumns = this.yAxis.map(item => item.item_text);
-            this.initializeFilterColumns();
+            this.filters = [];
             this.applyFiltersAndSort();
             this.updatePagination();
             this.updateChartData();
@@ -281,94 +278,6 @@ export class ChartComponent implements OnInit {
         });
       },
       error: (err) => this.handleQueryFailure(err, startTime),
-    });
-  }
-
-  private parseSqlFilters() {
-    this.sqlQueryFilters = [];
-    if (!this.sqlQuery) return;
-
-    const whereMatch = this.sqlQuery.match(/WHERE\s+(.+?)(?:\s*(?:GROUP\s+BY|ORDER\s+BY|LIMIT|$))/i);
-    if (!whereMatch) return;
-
-    const conditions = whereMatch[1].split(/\s+(AND|OR)\s+/i).filter((_, i) => i % 2 === 0);
-    const logicalOperators = whereMatch[1].match(/\s+(AND|OR)\s+/ig)?.map(op => op.trim().toLowerCase()) || [];
-
-    conditions.forEach((condition, index) => {
-      if (condition.includes('BETWEEN')) {
-        const match = condition.match(/(\w+)\s+BETWEEN\s+(\d+)\s+AND\s+(\d+)/i);
-        if (match) {
-          this.sqlQueryFilters.push({
-            column: match[1],
-            operation: 'range',
-            valueStart: parseFloat(match[2]),
-            valueEnd: parseFloat(match[3]),
-            condition: logicalOperators[index - 1] || 'and',
-            values: [],
-          });
-        }
-      } else if (condition.includes(' IN ')) {
-        const match = condition.match(/(\w+)\s+IN\s+\((.+?)\)/i);
-        if (match) {
-          const values = match[2].split(',').map(v => v.trim().replace(/['"]/g, ''));
-          this.sqlQueryFilters.push({
-            column: match[1],
-            operation: 'in',
-            values,
-            condition: logicalOperators[index - 1] || 'and',
-          });
-        }
-      } else {
-        const match = condition.match(/(\w+)\s*(=|>|<|>=|<=|!=)\s*['"]?([^'"]+)['"]?/i);
-        if (match) {
-          const operationMap: { [key: string]: string } = {
-            '=': 'equals',
-            '>': 'greater than',
-            '<': 'less than',
-            '>=': 'greater than or equal',
-            '<=': 'less than or equal',
-            '!=': 'not equals',
-          };
-          this.sqlQueryFilters.push({
-            column: match[1],
-            operation: operationMap[match[2]] || match[2],
-            values: [match[3]],
-            condition: logicalOperators[index - 1] || 'and',
-          });
-        }
-      }
-    });
-
-    this.updateDisplayStrings();
-  }
-
-  private initializeFilterColumns() {
-    this.apiService.GetDataTypeData(this.tableName).subscribe({
-      next: (dataTypes) => {
-        this.filterColumns = this.availableColumns.map(col => ({
-          name: col,
-          type: dataTypes[col] || 'string',
-          values: [],
-        }));
-        this.fetchDistinctValues();
-      },
-      error: (err) => console.error('Failed to fetch data types:', err),
-    });
-  }
-
-  private fetchDistinctValues() {
-    this.filterColumns.forEach(col => {
-      this.apiService.GetDistinctColValues(this.tableName, col.name).subscribe({
-        next: (values) => {
-          col.values = values.map((v: any) => v[col.name]);
-          this.filters = this.filters.map(filter => ({
-            ...filter,
-            availableValues: filter.column === col.name ? col.values : filter.availableValues,
-          }));
-          this.updateDisplayStrings();
-        },
-        error: (err) => console.error(`Failed to fetch distinct values for ${col.name}:`, err),
-      });
     });
   }
 
@@ -420,8 +329,8 @@ export class ChartComponent implements OnInit {
         });
         return Math.max(...values);
       });
-      const dataMax = Math.max(...maxValues);
-      maxYValue = Math.max(50, Math.ceil(dataMax / 10) * 10);
+      const max = Math.max(...maxValues);
+      maxYValue = Math.max(50, Math.ceil(max / 10) * 10);
     }
 
     if (this.selectedChart === 'pie') {
@@ -507,21 +416,16 @@ export class ChartComponent implements OnInit {
   }
 
   handleChartClick(label: any, datasetLabel: any, index: number) {
-    const filter = this.filters.find(f => f.column === this.xAxisColumns[0]);
-    if (filter) {
-      filter.values = [String(label)];
-    } else {
-      this.filters.push({
-        column: this.xAxisColumns[0],
-        operation: 'equals',
-        values: [String(label)],
-        availableOperations: ['equals'],
-        availableValues: [label],
-        condition: 'AND',
-      });
-    }
-    this.applyFiltersAndSort();
-    alert(`Filtered by ${this.xAxisColumns[0]} = ${label}`);
+    const newFilter: TableFilter = {
+      column: this.xAxisColumns[0],
+      operation: 'equals',
+      value: String(label),
+      availableOperations: ['equals', 'contains'],
+    };
+    this.filters.push(newFilter);
+    this.onFilterColumnChange(this.filters.length - 1);
+    this.applyFilter();
+    alert(`Added filter: ${this.xAxisColumns[0]} = ${label}`);
   }
 
   selectChart(chartType: ChartType | null) {
@@ -551,7 +455,7 @@ export class ChartComponent implements OnInit {
       xAxisColumns: this.xAxisColumns,
       yAxisColumns: this.yAxisColumns,
       timestamp: this.queryStatus.timestamp,
-      sqlQueryFilters: this.sqlQueryFilters,
+      filters: this.filters,
     };
     const dataStr = JSON.stringify(exportData, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
@@ -586,7 +490,14 @@ export class ChartComponent implements OnInit {
       xAxisColumns: this.xAxisColumns,
       yAxisColumns: this.yAxisColumns,
       aggregateFunction: this.queryRequestBody.aggregations?.[0]?.function || '',
-      filters: this.filters,
+      filters: this.filters.map(f => ({
+        column: f.column,
+        operation: f.operation,
+        values: [f.value],
+        availableOperations: f.availableOperations,
+        availableValues: [],
+        condition: 'AND',
+      } as Filter)),
       sortColumns: this.sortColumns,
       dataLimit: this.queryData.length,
       saved: true,
@@ -616,7 +527,7 @@ export class ChartComponent implements OnInit {
 
   reorderColumns() {
     this.columns.forEach(item => {
-      item.isSelected = this.selectedColumns.includes(item.item_text);
+      item.isSelected = this.selectedColumns.some(col => col.name === item.item_text);
     });
     this.columns = [
       ...this.columns.filter(item => item.isSelected),
@@ -651,64 +562,10 @@ export class ChartComponent implements OnInit {
   }
 
   applyColumns() {
-    this.selectedColumns = this.selectedColumnsItems.map(item => item.item_text);
+    this.selectedColumns = this.selectedColumnsItems.map(item => ({ name: item.item_text }));
     this.reorderColumns();
     this.applyFiltersAndSort();
     this.closeColumnsModal();
-  }
-
-  openFilter() {
-    this.showFilterModal = true;
-  }
-
-  closeFilterModal() {
-    this.showFilterModal = false;
-  }
-
-  addFilter() {
-    const column = this.availableColumns[0] || '';
-    const colType = this.filterColumns.find(c => c.name === column)?.type || 'string';
-    const operations = colType.includes('integer') || colType.includes('decimal') 
-      ? ['equals', 'not equals', 'greater than', 'less than', 'range']
-      : ['equals', 'not equals', 'contains', 'like'];
-    const newFilter: Filter = {
-      column,
-      operation: operations[0],
-      values: [],
-      valueStart: colType.includes('integer') || colType.includes('decimal') ? 0 : undefined,
-      valueEnd: colType.includes('integer') || colType.includes('decimal') ? 0 : undefined,
-      availableOperations: operations,
-      availableValues: this.filterColumns.find(c => c.name === column)?.values || [],
-      condition: 'AND',
-      isMultiSelectOpen: false,
-    };
-    this.filters.push(newFilter);
-    this.updateDisplayStrings();
-  }
-
-  removeFilter(index: number) {
-    this.filters.splice(index, 1);
-    this.applyFiltersAndSort();
-  }
-
-  onFilterColumnChange(filter: Filter) {
-    const col = this.filterColumns.find(c => c.name === filter.column);
-    filter.availableValues = col?.values || [];
-    filter.values = [];
-    filter.valueStart = col?.type.includes('integer') || col?.type.includes('decimal') ? 0 : undefined;
-    filter.valueEnd = col?.type.includes('integer') || col?.type.includes('decimal') ? 0 : undefined;
-    filter.operation = col?.type.includes('integer') || col?.type.includes('decimal') 
-      ? 'equals' 
-      : 'contains';
-    filter.availableOperations = col?.type.includes('integer') || col?.type.includes('decimal')
-      ? ['equals', 'not equals', 'greater than', 'less than', 'range']
-      : ['equals', 'not equals', 'contains', 'like'];
-    this.updateDisplayStrings();
-  }
-
-  applyFilters() {
-    this.applyFiltersAndSort();
-    this.closeFilterModal();
   }
 
   openSort() {
@@ -719,9 +576,17 @@ export class ChartComponent implements OnInit {
     this.showSortModal = false;
   }
 
+  openFilter() {
+    this.showFilterModal = true;
+  }
+
+  closeFilterModal() {
+    this.showFilterModal = false;
+  }
+
   addSort() {
     this.sortColumns.push({
-      column: this.availableColumns[0] || '',
+      column: this.availableColumns[0]?.name || '',
       order: 'asc',
     });
     this.updateDisplayStrings();
@@ -737,30 +602,53 @@ export class ChartComponent implements OnInit {
     this.closeSortModal();
   }
 
+  onFilterColumnChange(filterIndex: number) {
+    const filter = this.filters[filterIndex];
+    const colName = filter.column;
+    const isNumeric = this.queryData.some(row => {
+      const value = row[colName];
+      return value != null && !isNaN(Number(value));
+    });
+    filter.availableOperations = isNumeric
+      ? ['equals', 'greater than', 'less than']
+      : ['equals', 'contains'];
+    filter.operation = filter.availableOperations[0] as 'equals' | 'contains' | 'greater than' | 'less than';
+    filter.value = '';
+  }
+
+  addFilter() {
+    this.filters.push({
+      column: '',
+      operation: 'equals',
+      value: '',
+      availableOperations: [],
+    });
+  }
+
+  removeFilter(index: number) {
+    this.filters.splice(index, 1);
+    this.applyFilter();
+  }
+
+  applyFilter() {
+    this.updateDisplayStrings();
+    this.applyFiltersAndSort();
+    this.closeFilterModal();
+  }
+
+  clearFilter() {
+    this.filters = [];
+    this.filtersDisplay = 'None';
+    this.applyFiltersAndSort();
+  }
+
   private updateDisplayStrings() {
     this.sortByDisplay = this.sortColumns.length
       ? this.sortColumns.map(s => `${s.column} (${s.order})`).join(', ')
       : 'None';
     this.filtersDisplay = this.filters.length
-      ? this.filters.map(f => {
-          if (f.operation === 'range') {
-            return `${f.column} between ${f.valueStart ?? '0'} and ${f.valueEnd ?? '0'}`;
-          }
-          return `${f.column} ${f.operation} ${f.values.map(v => String(v)).join(', ') || 'None'}`;
-        }).join(', ')
-      : this.sqlQueryFilters.length
-        ? this.sqlQueryFilters.map(f => 
-            `${f.column} ${f.operation} ${f.values.join(', ') || (f.valueStart + ' - ' + f.valueEnd)}`
-          ).join(', ')
-        : 'None';
-  }
-
-  getFilterValues(filter: Filter): DropdownItem[] {
-    return filter.availableValues.map((v, idx) => ({
-      item_id: idx,
-      item_text: String(v),
-      isSelected: filter.values.includes(String(v)),
-    }));
+      ? this.filters.map(f => `${f.column} ${f.operation} "${f.value}"`).join(' AND ')
+      : 'None';
   }
 
   applyFiltersAndSort() {
@@ -769,42 +657,35 @@ export class ChartComponent implements OnInit {
     if (this.searchQuery) {
       data = data.filter((row) =>
         Object.values(row).some((val) =>
-          val?.toString().toLowerCase().includes(this.searchQuery.toLowerCase())
+          val?.toString().toLowerCase().startsWith(this.searchQuery.toLowerCase())
         )
       );
     }
 
-    this.filters.forEach(filter => {
-      data = data.filter(row => {
-        const value = row[filter.column];
-        if (value == null) return false;
+    if (this.filters.length) {
+      data = data.filter((row) => {
+        return this.filters.every((filter) => {
+          if (!filter.column || !filter.operation || !filter.value) return true;
+          const value = row[filter.column];
+          const filterValue = filter.value.toLowerCase();
+          const strValue = value != null ? String(value).toLowerCase() : '';
+          const numValue = Number(value);
 
-        const filterValues = filter.values.map(v => String(v).toLowerCase());
-        const strValue = String(value).toLowerCase();
-        const numValue = Number(value);
-
-        switch (filter.operation) {
-          case 'equals':
-            return filterValues.includes(strValue);
-          case 'not equals':
-            return !filterValues.includes(strValue);
-          case 'contains':
-            return filterValues.some(v => strValue.includes(v));
-          case 'like':
-            return filterValues.some(v => strValue.match(new RegExp(v.replace('%', '.*'), 'i')));
-          case 'greater than':
-            return !isNaN(numValue) && numValue > Number(filter.values[0] || 0);
-          case 'less than':
-            return !isNaN(numValue) && numValue < Number(filter.values[0] || 0);
-          case 'range':
-            const start = Number(filter.valueStart ?? filter.values[0] ?? 0);
-            const end = Number(filter.valueEnd ?? filter.values[1] ?? Infinity);
-            return !isNaN(numValue) && numValue >= start && numValue <= end;
-          default:
-            return true;
-        }
+          switch (filter.operation) {
+            case 'equals':
+              return strValue === filterValue;
+            case 'contains':
+              return strValue.includes(filterValue);
+            case 'greater than':
+              return !isNaN(numValue) && numValue > Number(filter.value);
+            case 'less than':
+              return !isNaN(numValue) && numValue < Number(filter.value);
+            default:
+              return true;
+          }
+        });
       });
-    });
+    }
 
     if (this.sortColumns.length > 0) {
       data.sort((a, b) => {
@@ -851,7 +732,7 @@ export class ChartComponent implements OnInit {
     this.paginatedData = this.filteredData.slice(startIndex, endIndex).map(row => {
       const filteredRow: any = {};
       this.selectedColumns.forEach(col => {
-        filteredRow[col] = row[col];
+        filteredRow[col.name] = row[col.name];
       });
       return filteredRow;
     });
@@ -888,10 +769,10 @@ export class ChartComponent implements OnInit {
     try {
       const csvData = this.queryData.map((row) =>
         this.selectedColumns
-          .map(col => `"${row[col] ?? ''}"`)
+          .map(col => `"${row[col.name] ?? ''}"`)
           .join(',')
       );
-      csvData.unshift(this.selectedColumns.join(','));
+      csvData.unshift(this.selectedColumns.map(col => col.name).join(','));
       const csvContent = csvData.join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
@@ -915,7 +796,7 @@ export class ChartComponent implements OnInit {
       const exportData = this.queryData.map(row => {
         const filteredRow: any = {};
         this.selectedColumns.forEach(col => {
-          filteredRow[col] = row[col] ?? '';
+          filteredRow[col.name] = row[col.name] ?? '';
         });
         return filteredRow;
       });
@@ -938,8 +819,8 @@ export class ChartComponent implements OnInit {
       const doc = new jsPDF();
       doc.text('Query Results', 14, 20);
       autoTable(doc, {
-        head: [this.selectedColumns],
-        body: this.queryData.map((row) => this.selectedColumns.map(col => row[col] ?? '')),
+        head: [this.selectedColumns.map(col => col.name)],
+        body: this.queryData.map((row) => this.selectedColumns.map(col => row[col.name] ?? '')),
         startY: 30,
         theme: 'striped',
         headStyles: { fillColor: [59, 130, 246] },
