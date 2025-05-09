@@ -1,3 +1,4 @@
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
@@ -155,6 +156,7 @@ export class ChartComponent implements OnInit {
   availableColumns: string[] = [];
   selectedColumns: string[] = [];
   columns: DropdownItem[] = [];
+  selectedColumnsItems: DropdownItem[] = [];
   filterColumns: FilterColumn[] = [];
 
   showColumnsModal = false;
@@ -264,6 +266,7 @@ export class ChartComponent implements OnInit {
               .sort((a, b) => a.localeCompare(b))
               .map((col, index) => ({ item_id: index, item_text: col, isSelected: true }));
             this.selectedColumns = this.availableColumns;
+            this.selectedColumnsItems = this.columns.slice();
             this.xAxis = this.columns.slice(0, 1).map(item => ({ ...item, isSelected: true }));
             this.yAxis = this.columns.slice(1, 2).map(item => ({ ...item, isSelected: true }));
             this.xAxisColumns = this.xAxis.map(item => item.item_text);
@@ -506,15 +509,15 @@ export class ChartComponent implements OnInit {
   handleChartClick(label: any, datasetLabel: any, index: number) {
     const filter = this.filters.find(f => f.column === this.xAxisColumns[0]);
     if (filter) {
-      filter.values = [label];
+      filter.values = [String(label)];
     } else {
       this.filters.push({
         column: this.xAxisColumns[0],
         operation: 'equals',
-        values: [label],
+        values: [String(label)],
         availableOperations: ['equals'],
         availableValues: [label],
-        condition: 'and',
+        condition: 'AND',
       });
     }
     this.applyFiltersAndSort();
@@ -612,15 +615,19 @@ export class ChartComponent implements OnInit {
   }
 
   reorderColumns() {
-    const sortedColumns = [...this.columns];
-    sortedColumns.forEach(item => {
-      item.isSelected = this.xAxis.some(x => x.item_id === item.item_id) || 
-                        this.yAxis.some(y => y.item_id === item.item_id);
+    this.columns.forEach(item => {
+      item.isSelected = this.selectedColumns.includes(item.item_text);
     });
     this.columns = [
-      ...sortedColumns.filter(item => item.isSelected),
-      ...sortedColumns.filter(item => !item.isSelected).sort((a, b) => a.item_text.localeCompare(b.item_text)),
+      ...this.columns.filter(item => item.isSelected),
+      ...this.columns.filter(item => !item.isSelected).sort((a, b) => a.item_text.localeCompare(b.item_text)),
     ];
+  }
+
+  updateSelectedColumns() {
+    this.columns.forEach(col => {
+      col.isSelected = this.selectedColumnsItems.some(item => item.item_id === col.item_id);
+    });
   }
 
   onAxisChange() {
@@ -635,6 +642,7 @@ export class ChartComponent implements OnInit {
   }
 
   openColumns() {
+    this.selectedColumnsItems = this.columns.filter(col => col.isSelected);
     this.showColumnsModal = true;
   }
 
@@ -643,7 +651,8 @@ export class ChartComponent implements OnInit {
   }
 
   applyColumns() {
-    this.selectedColumns = this.columns.filter(col => col.isSelected).map(col => col.item_text);
+    this.selectedColumns = this.selectedColumnsItems.map(item => item.item_text);
+    this.reorderColumns();
     this.applyFiltersAndSort();
     this.closeColumnsModal();
   }
@@ -659,17 +668,21 @@ export class ChartComponent implements OnInit {
   addFilter() {
     const column = this.availableColumns[0] || '';
     const colType = this.filterColumns.find(c => c.name === column)?.type || 'string';
-    const operations = colType.includes('int') || colType.includes('float') 
+    const operations = colType.includes('integer') || colType.includes('decimal') 
       ? ['equals', 'not equals', 'greater than', 'less than', 'range']
       : ['equals', 'not equals', 'contains', 'like'];
-    this.filters.push({
+    const newFilter: Filter = {
       column,
       operation: operations[0],
       values: [],
+      valueStart: colType.includes('integer') || colType.includes('decimal') ? 0 : undefined,
+      valueEnd: colType.includes('integer') || colType.includes('decimal') ? 0 : undefined,
       availableOperations: operations,
       availableValues: this.filterColumns.find(c => c.name === column)?.values || [],
-      condition: 'and',
-    });
+      condition: 'AND',
+      isMultiSelectOpen: false,
+    };
+    this.filters.push(newFilter);
     this.updateDisplayStrings();
   }
 
@@ -682,10 +695,12 @@ export class ChartComponent implements OnInit {
     const col = this.filterColumns.find(c => c.name === filter.column);
     filter.availableValues = col?.values || [];
     filter.values = [];
-    filter.operation = col?.type.includes('int') || col?.type.includes('float') 
+    filter.valueStart = col?.type.includes('integer') || col?.type.includes('decimal') ? 0 : undefined;
+    filter.valueEnd = col?.type.includes('integer') || col?.type.includes('decimal') ? 0 : undefined;
+    filter.operation = col?.type.includes('integer') || col?.type.includes('decimal') 
       ? 'equals' 
       : 'contains';
-    filter.availableOperations = col?.type.includes('int') || col?.type.includes('float')
+    filter.availableOperations = col?.type.includes('integer') || col?.type.includes('decimal')
       ? ['equals', 'not equals', 'greater than', 'less than', 'range']
       : ['equals', 'not equals', 'contains', 'like'];
     this.updateDisplayStrings();
@@ -726,18 +741,25 @@ export class ChartComponent implements OnInit {
     this.sortByDisplay = this.sortColumns.length
       ? this.sortColumns.map(s => `${s.column} (${s.order})`).join(', ')
       : 'None';
-    this.filtersDisplay = this.sqlQueryFilters.length
-      ? this.sqlQueryFilters.map(f => `${f.column} ${f.operation} ${f.values.join(', ') || (f.valueStart + ' - ' + f.valueEnd)}`).join(', ')
-      : this.filters.length
-      ? this.filters.map(f => `${f.column} ${f.operation}`).join(', ')
-      : 'None';
+    this.filtersDisplay = this.filters.length
+      ? this.filters.map(f => {
+          if (f.operation === 'range') {
+            return `${f.column} between ${f.valueStart ?? '0'} and ${f.valueEnd ?? '0'}`;
+          }
+          return `${f.column} ${f.operation} ${f.values.map(v => String(v)).join(', ') || 'None'}`;
+        }).join(', ')
+      : this.sqlQueryFilters.length
+        ? this.sqlQueryFilters.map(f => 
+            `${f.column} ${f.operation} ${f.values.join(', ') || (f.valueStart + ' - ' + f.valueEnd)}`
+          ).join(', ')
+        : 'None';
   }
 
   getFilterValues(filter: Filter): DropdownItem[] {
     return filter.availableValues.map((v, idx) => ({
       item_id: idx,
       item_text: String(v),
-      isSelected: false,
+      isSelected: filter.values.includes(String(v)),
     }));
   }
 
@@ -757,8 +779,8 @@ export class ChartComponent implements OnInit {
         const value = row[filter.column];
         if (value == null) return false;
 
-        const filterValues = filter.values.map(v => v.toString().toLowerCase());
-        const strValue = value.toString().toLowerCase();
+        const filterValues = filter.values.map(v => String(v).toLowerCase());
+        const strValue = String(value).toLowerCase();
         const numValue = Number(value);
 
         switch (filter.operation) {
@@ -771,11 +793,13 @@ export class ChartComponent implements OnInit {
           case 'like':
             return filterValues.some(v => strValue.match(new RegExp(v.replace('%', '.*'), 'i')));
           case 'greater than':
-            return !isNaN(numValue) && numValue > Number(filter.values[0]);
+            return !isNaN(numValue) && numValue > Number(filter.values[0] || 0);
           case 'less than':
-            return !isNaN(numValue) && numValue < Number(filter.values[0]);
+            return !isNaN(numValue) && numValue < Number(filter.values[0] || 0);
           case 'range':
-            return !isNaN(numValue) && numValue >= Number(filter.valueStart) && numValue <= Number(filter.valueEnd);
+            const start = Number(filter.valueStart ?? filter.values[0] ?? 0);
+            const end = Number(filter.valueEnd ?? filter.values[1] ?? Infinity);
+            return !isNaN(numValue) && numValue >= start && numValue <= end;
           default:
             return true;
         }
@@ -785,8 +809,8 @@ export class ChartComponent implements OnInit {
     if (this.sortColumns.length > 0) {
       data.sort((a, b) => {
         for (const sort of this.sortColumns) {
-          const valueA = a[sort.column] != null ? a[sort.column].toString().toLowerCase() : '';
-          const valueB = b[sort.column] != null ? b[sort.column].toString().toLowerCase() : '';
+          const valueA = a[sort.column] != null ? String(a[sort.column]).toLowerCase() : '';
+          const valueB = b[sort.column] != null ? String(b[sort.column]).toLowerCase() : '';
           if (valueA === '' && valueB !== '') return 1;
           if (valueB === '' && valueA !== '') return -1;
           if (valueA === '' && valueB === '') continue;
@@ -824,7 +848,13 @@ export class ChartComponent implements OnInit {
   updatePagination() {
     const startIndex = (this.currentPage - 1) * this.rowsPerPage;
     const endIndex = startIndex + this.rowsPerPage;
-    this.paginatedData = this.filteredData.slice(startIndex, endIndex);
+    this.paginatedData = this.filteredData.slice(startIndex, endIndex).map(row => {
+      const filteredRow: any = {};
+      this.selectedColumns.forEach(col => {
+        filteredRow[col] = row[col];
+      });
+      return filteredRow;
+    });
   }
 
   previousPage() {
@@ -857,11 +887,11 @@ export class ChartComponent implements OnInit {
     }
     try {
       const csvData = this.queryData.map((row) =>
-        Object.values(row)
-          .map((val) => `"${val ?? ''}"`)
+        this.selectedColumns
+          .map(col => `"${row[col] ?? ''}"`)
           .join(',')
       );
-      csvData.unshift(this.availableColumns.join(','));
+      csvData.unshift(this.selectedColumns.join(','));
       const csvContent = csvData.join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
@@ -882,7 +912,14 @@ export class ChartComponent implements OnInit {
       return;
     }
     try {
-      const ws = XLSX.utils.json_to_sheet(this.queryData);
+      const exportData = this.queryData.map(row => {
+        const filteredRow: any = {};
+        this.selectedColumns.forEach(col => {
+          filteredRow[col] = row[col] ?? '';
+        });
+        return filteredRow;
+      });
+      const ws = XLSX.utils.json_to_sheet(exportData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'QueryData');
       XLSX.writeFile(wb, `query_data_${new Date().toISOString()}.xlsx`);

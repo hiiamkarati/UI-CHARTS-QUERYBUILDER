@@ -1,3 +1,4 @@
+
 <!-- Query Builder Container -->
 <div class="query-builder-container">
   <div class="title-container">
@@ -239,7 +240,11 @@
       [placeholder]="'Select Columns'"
       [settings]="dropdownSettings"
       [data]="columns"
-      [(ngModel)]="columns"
+      [(ngModel)]="selectedColumnsItems"
+      (onSelect)="updateSelectedColumns()"
+      (onDeSelect)="updateSelectedColumns()"
+      (onSelectAll)="updateSelectedColumns()"
+      (onDeSelectAll)="updateSelectedColumns()"
       aria-label="Select table columns">
     </ng-multiselect-dropdown>
     <div class="modal-actions">
@@ -255,7 +260,7 @@
     <h2 id="filter-modal-title">Add Filters</h2>
     <div class="filter-list">
       <div *ngFor="let filter of filters; let i = index" class="filter-item">
-        <select [(ngModel)]="filter.column" (change)="onFilterColumnChange(filter)" aria-label="Select filter column">
+        <select [(ngModel)]="filter.column" (ngModelChange)="onFilterColumnChange(filter)" aria-label="Select filter column">
           <option *ngFor="let col of availableColumns" [value]="col">{{ col }}</option>
         </select>
         <select [(ngModel)]="filter.operation" aria-label="Select filter operation">
@@ -274,8 +279,8 @@
           <input type="number" [(ngModel)]="filter.valueEnd" placeholder="Max" aria-label="Maximum value" />
         </div>
         <select [(ngModel)]="filter.condition" aria-label="Select filter condition">
-          <option value="and">AND</option>
-          <option value="or">OR</option>
+          <option value="AND">AND</option>
+          <option value="OR">OR</option>
         </select>
         <button (click)="removeFilter(i)" class="btn btn-danger" aria-label="Remove filter">
           <i class="fas fa-trash" aria-hidden="true"></i>
@@ -316,7 +321,6 @@
   </div>
 </div>
 
-<!-- Query Details Section -->
 <!-- Query Details Section -->
 <div class="query-details-section">
   <h3 class="query-details-title">Query Details</h3>
