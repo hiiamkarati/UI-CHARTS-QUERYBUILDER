@@ -292,7 +292,19 @@
         <select [(ngModel)]="filter.operation" aria-label="Select filter operation">
           <option *ngFor="let op of filter.availableOperations" [value]="op">{{ op }}</option>
         </select>
-        <input type="text" [(ngModel)]="filter.value" placeholder="Enter value" aria-label="Filter value" />
+        <ng-container *ngIf="getColumnValues(filter.column).length > 0; else textInput">
+          <select [(ngModel)]="filter.value" aria-label="Select filter value">
+            <option value="" disabled>Select Value</option>
+            <option *ngFor="let val of getColumnValues(filter.column)" [value]="val">{{ val }}</option>
+          </select>
+        </ng-container>
+        <ng-template #textInput>
+          <input type="text" [(ngModel)]="filter.value" placeholder="Enter value" aria-label="Filter value" />
+        </ng-template>
+        <select *ngIf="i < filters.length - 1" [(ngModel)]="filter.logicalOperator" aria-label="Select logical operator">
+          <option value="AND">AND</option>
+          <option value="OR">OR</option>
+        </select>
         <button (click)="removeFilter(i)" class="btn btn-danger" aria-label="Remove filter">
           <i class="fas fa-trash" aria-hidden="true"></i>
         </button>
@@ -365,7 +377,7 @@
       <div class="query-details-panel-content">
         <p *ngIf="!filters.length">No filters have been applied to this query</p>
         <p *ngFor="let filter of filters">
-          {{ filter.column }} {{ filter.operation }} {{ filter.value }}
+          {{ filter.column }} {{ filter.operation }} {{ filter.value }} {{ filter.logicalOperator ? filter.logicalOperator : '' }}
         </p>
       </div>
     </div>

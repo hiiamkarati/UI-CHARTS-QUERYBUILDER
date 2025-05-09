@@ -15,6 +15,7 @@ import autoTable from 'jspdf-autotable';
 
 interface TableColumn {
   name: string;
+  values?: any[];
 }
 
 interface ColumnDropdownItem {
@@ -25,9 +26,10 @@ interface ColumnDropdownItem {
 
 interface TableFilter {
   column: string;
-  operation: 'equals' | 'contains' | 'greater than' | 'less than';
+  operation: 'equals' | 'contains' | 'greater than' | 'less than' | 'greater than or equal' | 'less than or equal';
   value: string;
   availableOperations: string[];
+  logicalOperator?: 'AND' | 'OR'; // Added for multiple filter support
 }
 
 @Component({
@@ -161,7 +163,7 @@ export class ChartComponent implements OnInit {
 
   showColumnsModal = false;
   showSortModal = false;
-  showFilterModal = false; // Added for filter modal
+  showFilterModal = false;
   sortColumns: SortColumn[] = [];
   filters: TableFilter[] = [];
   sortByDisplay: string = 'None';
@@ -258,7 +260,13 @@ export class ChartComponent implements OnInit {
               executionTime: Number(((performance.now() - startTime) / 1000).toFixed(2)),
               rowsReturned: data.length,
             };
-            this.availableColumns = data.length ? Object.keys(data[0]).map(name => ({ name })) : [];
+            this.availableColumns = data.length ? Object.keys(data[0]).map(name => {
+              const uniqueValues = [...new Set(data.map(row => row[name]))].filter(val => val != null);
+              return {
+                name,
+                values: uniqueValues.length <= 20 ? uniqueValues : []
+              };
+            }) : [];
             this.columns = this.availableColumns
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((col, index) => ({ item_id: index, item_text: col.name, isSelected: true }));
@@ -297,6 +305,11 @@ export class ChartComponent implements OnInit {
     });
     console.error('Query Error:', err);
     alert('Failed to process query: ' + (err.message || 'Unknown error'));
+  }
+
+  getColumnValues(columnName: string): any[] {
+    const column = this.availableColumns.find(col => col.name === columnName);
+    return column && column.values ? column.values : [];
   }
 
   updateChartData() {
@@ -421,6 +434,7 @@ export class ChartComponent implements OnInit {
       operation: 'equals',
       value: String(label),
       availableOperations: ['equals', 'contains'],
+      logicalOperator: 'AND',
     };
     this.filters.push(newFilter);
     this.onFilterColumnChange(this.filters.length - 1);
@@ -495,8 +509,7 @@ export class ChartComponent implements OnInit {
         operation: f.operation,
         values: [f.value],
         availableOperations: f.availableOperations,
-        availableValues: [],
-        condition: 'AND',
+        availableValues: this.getColumnValues(f.column),
       } as Filter)),
       sortColumns: this.sortColumns,
       dataLimit: this.queryData.length,
@@ -562,7 +575,10 @@ export class ChartComponent implements OnInit {
   }
 
   applyColumns() {
-    this.selectedColumns = this.selectedColumnsItems.map(item => ({ name: item.item_text }));
+    this.selectedColumns = this.selectedColumnsItems.map(item => ({
+      name: item.item_text,
+      values: this.availableColumns.find(col => col.name === item.item_text)?.values
+    }));
     this.reorderColumns();
     this.applyFiltersAndSort();
     this.closeColumnsModal();
@@ -605,15 +621,25 @@ export class ChartComponent implements OnInit {
   onFilterColumnChange(filterIndex: number) {
     const filter = this.filters[filterIndex];
     const colName = filter.column;
+    const column = this.availableColumns.find(col => col.name === colName);
+    const isCategorical = column && column.values && column.values.length > 0;
     const isNumeric = this.queryData.some(row => {
       const value = row[colName];
       return value != null && !isNaN(Number(value));
     });
-    filter.availableOperations = isNumeric
-      ? ['equals', 'greater than', 'less than']
-      : ['equals', 'contains'];
-    filter.operation = filter.availableOperations[0] as 'equals' | 'contains' | 'greater than' | 'less than';
+
+    filter.availableOperations = isCategorical
+      ? ['equals', 'contains']
+      : isNumeric
+        ? ['equals', 'greater than', 'less than', 'greater than or equal', 'less than or equal']
+        : ['equals', 'contains'];
+    filter.operation = filter.availableOperations[0] as 'equals' | 'contains' | 'greater than' | 'less than' | 'greater than or equal' | 'less than or equal';
     filter.value = '';
+    if (filterIndex < this.filters.length - 1) {
+      filter.logicalOperator = filter.logicalOperator || 'AND';
+    } else {
+      filter.logicalOperator = undefined;
+    }
   }
 
   addFilter() {
@@ -622,11 +648,15 @@ export class ChartComponent implements OnInit {
       operation: 'equals',
       value: '',
       availableOperations: [],
+      logicalOperator: this.filters.length > 0 ? 'AND' : undefined,
     });
   }
 
   removeFilter(index: number) {
     this.filters.splice(index, 1);
+    if (this.filters.length > 0 && this.filters[this.filters.length - 1].logicalOperator) {
+      this.filters[this.filters.length - 1].logicalOperator = undefined;
+    }
     this.applyFilter();
   }
 
@@ -647,7 +677,9 @@ export class ChartComponent implements OnInit {
       ? this.sortColumns.map(s => `${s.column} (${s.order})`).join(', ')
       : 'None';
     this.filtersDisplay = this.filters.length
-      ? this.filters.map(f => `${f.column} ${f.operation} "${f.value}"`).join(' AND ')
+      ? this.filters.map((f, i) => 
+          `${f.column} ${f.operation} "${f.value}"${i < this.filters.length - 1 ? ` ${f.logicalOperator}` : ''}`
+        ).join(' ')
       : 'None';
   }
 
@@ -664,26 +696,59 @@ export class ChartComponent implements OnInit {
 
     if (this.filters.length) {
       data = data.filter((row) => {
-        return this.filters.every((filter) => {
-          if (!filter.column || !filter.operation || !filter.value) return true;
+        let result = true;
+        let previousResult = true;
+
+        for (let i = 0; i < this.filters.length; i++) {
+          const filter = this.filters[i];
+          if (!filter.column || !filter.operation || !filter.value) {
+            continue;
+          }
+
           const value = row[filter.column];
           const filterValue = filter.value.toLowerCase();
           const strValue = value != null ? String(value).toLowerCase() : '';
           const numValue = Number(value);
 
+          let currentResult: boolean;
           switch (filter.operation) {
             case 'equals':
-              return strValue === filterValue;
+              currentResult = strValue === filterValue;
+              break;
             case 'contains':
-              return strValue.includes(filterValue);
+              currentResult = strValue.includes(filterValue);
+              break;
             case 'greater than':
-              return !isNaN(numValue) && numValue > Number(filter.value);
+              currentResult = !isNaN(numValue) && numValue > Number(filter.value);
+              break;
             case 'less than':
-              return !isNaN(numValue) && numValue < Number(filter.value);
+              currentResult = !isNaN(numValue) && numValue < Number(filter.value);
+              break;
+            case 'greater than or equal':
+              currentResult = !isNaN(numValue) && numValue >= Number(filter.value);
+              break;
+            case 'less than or equal':
+              currentResult = !isNaN(numValue) && numValue <= Number(filter.value);
+              break;
             default:
-              return true;
+              currentResult = true;
           }
-        });
+
+          if (i === 0) {
+            result = currentResult;
+          } else {
+            const logicalOperator = this.filters[i - 1].logicalOperator || 'AND';
+            if (logicalOperator === 'AND') {
+              result = previousResult && currentResult;
+            } else {
+              result = previousResult || currentResult;
+            }
+          }
+
+          previousResult = result;
+        }
+
+        return result;
       });
     }
 
@@ -823,6 +888,7 @@ export class ChartComponent implements OnInit {
         body: this.queryData.map((row) => this.selectedColumns.map(col => row[col.name] ?? '')),
         startY: 30,
         theme: 'striped',
+       
         headStyles: { fillColor: [59, 130, 246] },
       });
       doc.save(`query_data_${new Date().toISOString()}.pdf`);
